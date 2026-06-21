@@ -7,8 +7,8 @@
  * @module GlyphProcessorPrimitives
  */
 
-import type { FigmaBlob, OpenTypeFont, OpenTypeGlyph } from "../../types";
-import type { FontMetrics, LoadedFont } from "../font";
+import type { FigmaBlob, OpenTypeGlyph } from "../../types";
+import type { LoadedFont } from "../font";
 import { pathCommandsToGlyphBytes } from "./encoder";
 
 /**
@@ -132,9 +132,9 @@ export function processGlyphs(
   loadedFont: LoadedFont,
   text: string,
   options: GlyphProcessingOptions,
-  registerBlob: (blob: FigmaBlob) => number
+  registerBlob: (blob: FigmaBlob) => number,
+  fallbackFonts: Array<LoadedFont> = []
 ): ProcessedGlyphs {
-  const { font, metrics } = loadedFont;
   const {
     fontSize,
     includeWhitespace = true,
@@ -158,11 +158,11 @@ export function processGlyphs(
     }
 
     const glyphData = processSingleGlyph(
-      font,
+      loadedFont,
       char,
-      metrics,
       fontSize,
-      registerBlob
+      registerBlob,
+      fallbackFonts
     );
     if (glyphData) {
       glyphDataMap.set(char, glyphData);
@@ -182,43 +182,49 @@ export function processGlyphs(
  * 4. Registers blob and stores index
  * 5. Calculates metrics and advance width
  *
- * @param font - OpenType.js font object
+ * @param primary - Primary loaded font (font + metrics)
  * @param char - Character to process
- * @param metrics - Font metrics for calculations
  * @param fontSize - Font size in pixels for advance width
  * @param registerBlob - Function to register blob data and get index
- * @returns Processed glyph data or null if character not supported
+ * @param fallbackFonts - Fonts tried in order when the primary lacks the glyph
+ * @returns Processed glyph data or null if no font has the glyph
  *
  * @example
  * ```typescript
- * const glyphData = processSingleGlyph(font, 'A', metrics, 16, registerBlob);
+ * const glyphData = processSingleGlyph(primary, 'A', 16, registerBlob, []);
  * if (glyphData) {
  *   console.log(`Advance width: ${glyphData.advance}px`);
  * }
  * ```
  */
 function processSingleGlyph(
-  font: OpenTypeFont,
+  primary: LoadedFont,
   char: string,
-  metrics: FontMetrics,
   fontSize: number,
-  registerBlob: (blob: FigmaBlob) => number
+  registerBlob: (blob: FigmaBlob) => number,
+  fallbackFonts: Array<LoadedFont>
 ): GlyphData | null {
   const codePoint = char.codePointAt(0);
   if (codePoint === undefined) {
     return null;
   }
-  const glyph = font.glyphForCodePoint(codePoint);
 
-  // glyph.id 0 is the .notdef glyph for unmapped characters. Treat space as a
-  // valid glyph even when the cmap returns .notdef, since we substitute a
-  // minimal blob for it anyway.
-  if (glyph.id === 0 && char !== " ") {
+  // Space is always drawn from the primary (a minimal blob is substituted), even
+  // when the cmap returns .notdef. For everything else, pick the first font —
+  // primary then fallbacks — that actually has the glyph.
+  const chosen =
+    char === " "
+      ? primary
+      : resolveGlyphFont(primary, fallbackFonts, codePoint);
+  if (chosen === null) {
     console.warn(
       `No glyph found for character: '${char}' (U+${codePoint.toString(16).toUpperCase()})`
     );
     return null;
   }
+  const font = chosen.font;
+  const metrics = chosen.metrics;
+  const glyph = font.glyphForCodePoint(codePoint);
 
   if (char === " ") {
     return createSpaceGlyph(

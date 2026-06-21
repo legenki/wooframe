@@ -5,6 +5,7 @@ import type { LoadedFont } from "../font";
 import { loadFont } from "../font/loader";
 import {
   collectCodepointsMissingFromFont,
+  processGlyphs,
   resolveGlyphFont,
 } from "./processor";
 
@@ -50,5 +51,53 @@ describe("resolveGlyphFont", () => {
   it("returns null when no font has the glyph", () => {
     // U+E000 (private use) is in neither fixture.
     expect(resolveGlyphFont(inter, [math], 0xe0_00)).toBeNull();
+  });
+});
+
+describe("processGlyphs with fallback fonts", () => {
+  const blobs: Array<{ bytes: Array<number> }> = [];
+  const register = (b: { bytes: Array<number> }) => {
+    blobs.push(b);
+    return blobs.length - 1;
+  };
+
+  it("produces a glyph for a char missing from primary but in a fallback", () => {
+    // ▾ U+25BE: absent in Inter, present in Math.
+    const out = processGlyphs(
+      inter,
+      "▾",
+      { fontSize: 16, includeWhitespace: false },
+      register,
+      [math]
+    );
+    const data = out.glyphDataMap.get("▾");
+    expect(data).toBeDefined();
+    expect(data?.bytes.length).toBeGreaterThan(1);
+    // Advance comes from Math (the font that supplied the glyph), non-zero.
+    expect(data?.advance).toBeGreaterThan(0);
+  });
+
+  it("drops a char present in no font and produces no entry", () => {
+    // U+E000 (private use) is in neither Inter nor Math.
+    const pua = String.fromCodePoint(0xe0_00);
+    const out = processGlyphs(
+      inter,
+      pua,
+      { fontSize: 16, includeWhitespace: false },
+      register,
+      [math]
+    );
+    expect(out.glyphDataMap.has(pua)).toBe(false);
+  });
+
+  it("still maps a normal char from the primary with no fallbacks", () => {
+    const out = processGlyphs(
+      inter,
+      "A",
+      { fontSize: 16, includeWhitespace: false },
+      register,
+      []
+    );
+    expect(out.glyphDataMap.get("A")?.bytes.length).toBeGreaterThan(1);
   });
 });
