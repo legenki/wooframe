@@ -162,6 +162,53 @@ const FONTSOURCE_DEFAULT_SUBSET = "latin";
 const DEFAULT_FALLBACK_FAMILY = "Inter";
 
 /**
+ * Generic / system CSS family names → a real fontsource family to substitute.
+ *
+ * Keys are the output of `familyToSlug` (lowercased, quotes stripped, spaces →
+ * hyphens). `familyToSlug` does NOT strip a leading hyphen, so `-apple-system`
+ * keeps it and `BlinkMacSystemFont` becomes `blinkmacsystemfont`. Do not
+ * "normalize" the leading hyphen away.
+ *
+ * The `SANS_FALLBACK` value is a sentinel meaning "use the configured
+ * fallbackFamily" (sans-category generics). `serif`/`monospace` map to fixed
+ * families that do not depend on fallbackFamily.
+ */
+const SANS_FALLBACK = "" as const;
+const GENERIC_FAMILY_MAP: Record<string, string> = {
+  "sans-serif": SANS_FALLBACK,
+  "ui-sans-serif": SANS_FALLBACK,
+  "ui-rounded": SANS_FALLBACK,
+  "system-ui": SANS_FALLBACK,
+  "-apple-system": SANS_FALLBACK,
+  blinkmacsystemfont: SANS_FALLBACK,
+  cursive: SANS_FALLBACK,
+  fantasy: SANS_FALLBACK,
+  math: SANS_FALLBACK,
+  emoji: SANS_FALLBACK,
+  serif: "PT Serif",
+  "ui-serif": "PT Serif",
+  monospace: "Roboto Mono",
+  "ui-monospace": "Roboto Mono",
+};
+
+/**
+ * Resolve a slug to its substitute fontsource family, or `null` if the slug is
+ * not a known generic. For sans-category generics the substitute is the
+ * configured `fallbackFamily` (which may itself be `null` in strict mode); the
+ * caller turns that into an explicit error.
+ */
+function resolveGenericFamily(
+  familyKey: string,
+  fallbackFamily: string | null
+): { family: string | null } | null {
+  const mapped = GENERIC_FAMILY_MAP[familyKey];
+  if (mapped === undefined) {
+    return null;
+  }
+  return { family: mapped === SANS_FALLBACK ? fallbackFamily : mapped };
+}
+
+/**
  * Build a `FontLoader` that pulls Google Fonts as static `.woff2` files from
  * fontsource via jsDelivr's CDN. No API key, no UA tricks, browser-friendly.
  * fontkit decompresses WOFF2 transparently.
@@ -189,6 +236,19 @@ export function createFontsourceLoader(
 
   return async (request: FontProperties): Promise<FontFile> => {
     const familyKey = familyToSlug(request.family);
+
+    // Generic / system family names never exist on fontsource. Resolve them to
+    // a real family up front so we never fire a doomed 404-ing CDN request.
+    const genericTarget = resolveGenericFamily(familyKey, fallbackFamily);
+    if (genericTarget !== null) {
+      if (!genericTarget.family) {
+        throw new Error(
+          `fontsource: "${request.family}" requires a fallbackFamily (none configured)`
+        );
+      }
+      return await loadAsFallback(genericTarget.family, request, subset);
+    }
+
     const isFallbackRequest = fallbackKey === familyKey;
 
     if (knownMissingFamilies.has(familyKey)) {
