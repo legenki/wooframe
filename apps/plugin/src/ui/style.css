@@ -52,3 +52,25 @@ button:disabled {
 .status.error {
   color: #b91c1c;
 }
+.sizes {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.size {
+  flex: 1;
+  margin-top: 0;
+  color: #1e1e1e;
+  background: #f0f0f0;
+}
+.size.active {
+  color: #fff;
+  background: #0d99ff;
+}
+.url {
+  box-sizing: border-box;
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px;
+  font: inherit;
+}

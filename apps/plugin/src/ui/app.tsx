@@ -1,8 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import type { CodeToUi, UiToCode } from "../messages";
 import { renderAndConvert } from "./render-host";
+import { loadHtmlFromUrl } from "./url-loader";
 
 const HTML_EXT = /\.html?$/i;
+
+const SCREEN_PRESETS = [
+  { label: "iPhone", width: 390 },
+  { label: "Macbook", width: 1440 },
+] as const;
+
+// Default to the Macbook preset (matches the previous hardcoded render width).
+const DEFAULT_WIDTH = SCREEN_PRESETS[1].width;
 
 function post(msg: UiToCode) {
   parent.postMessage({ pluginMessage: msg }, "*");
@@ -23,6 +32,9 @@ export function App() {
   const [status, setStatus] = useState("");
   const [isError, setIsError] = useState(false);
   const [over, setOver] = useState(false);
+  const [width, setWidth] = useState<number>(DEFAULT_WIDTH);
+  const [url, setUrl] = useState("");
+  const [proxy, setProxy] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -61,7 +73,8 @@ export function App() {
     try {
       const { nodeChanges, rootName, blobs } = await renderAndConvert(
         source,
-        name
+        name,
+        width
       );
       post({ type: "import-nodes", nodeChanges, rootName, blobs });
     } catch (error) {
@@ -78,8 +91,37 @@ export function App() {
     await runImport(text);
   }
 
+  async function onImportUrl() {
+    setBusy(true);
+    setIsError(false);
+    setStatus("Loading URL…");
+    try {
+      const loaded = await loadHtmlFromUrl(url, proxy || undefined);
+      setHtml(loaded);
+      await runImport(loaded);
+    } catch (error) {
+      setBusy(false);
+      setIsError(true);
+      setStatus(
+        `Couldn't load that URL. The site or your proxy blocked the request (CORS). Try a different proxy or save the page as an .html file. (${(error as Error).message})`
+      );
+    }
+  }
+
   return (
     <div>
+      <div className="sizes">
+        {SCREEN_PRESETS.map((p) => (
+          <button
+            className={width === p.width ? "size active" : "size"}
+            key={p.label}
+            onClick={() => setWidth(p.width)}
+            type="button"
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
       <button
         className={over ? "drop over" : "drop"}
         onClick={() => fileRef.current?.click()}
@@ -123,6 +165,27 @@ export function App() {
         type="button"
       >
         {busy ? "Importing…" : "Import to Figma"}
+      </button>
+      <input
+        className="url"
+        onChange={(e) => setUrl(e.target.value)}
+        placeholder="https://example.com to load by URL"
+        type="url"
+        value={url}
+      />
+      <input
+        className="url"
+        onChange={(e) => setProxy(e.target.value)}
+        placeholder="Optional CORS proxy, e.g. https://your-proxy/?url={url}"
+        type="text"
+        value={proxy}
+      />
+      <button
+        disabled={busy || !url.trim()}
+        onClick={() => run(onImportUrl())}
+        type="button"
+      >
+        {busy ? "Importing…" : "Import from URL"}
       </button>
       {status && (
         <div className={isError ? "status error" : "status"}>{status}</div>
