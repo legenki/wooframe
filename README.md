@@ -78,16 +78,16 @@ form placeholders. Fonts load from the fontsource CDN (jsDelivr) by default.
 
 Open edges, roughly by increasing effort:
 
-1. **System-font 404 noise** — names like `ui-monospace`, `-apple-system`,
-   `Inter` are requested from the font CDN, which doesn't carry system fonts, so
-   they 404 before the Inter fallback kicks in. A name→fallback map applied
-   before the request would remove the noise.
-2. **Raster image fills in the plugin** — wire `figma.createImage` so bitmap
+1. **Raster image fills in the plugin** — wire `figma.createImage` so bitmap
    fills land as real images on the canvas.
-3. **Bundled / self-unpacking pages vs. CSP** — pages that load React (or
+2. **Bundled / self-unpacking pages vs. CSP** — pages that load React (or
    similar) from a CDN at runtime hit the plugin's `script-src` CSP. Resolving
    it means widening the manifest `allowedDomains` to the needed CDNs, or
    unpacking bundles outside the plugin CSP.
+
+System / generic font names (`ui-monospace`, `-apple-system`, `sans-serif`,
+`serif`, `monospace`, …) are mapped to fontsource families before any CDN
+request, so they no longer 404.
 
 The plugin sandbox is QuickJS, so `code.ts` is transpiled to es2017
 (`?.` / `??` aren't supported there) — see

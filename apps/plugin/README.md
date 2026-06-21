@@ -53,9 +53,12 @@ coverage, and deriving gradient direction from the CSS angle.
   page. Static HTML imports correctly. Resolving this means either widening the
   manifest `allowedDomains` to the CDNs those pages use, or unpacking bundles
   outside the plugin CSP.
-- **System fonts 404 on the CDN.** Names like `ui-monospace` / `Inter` are
-  requested from the fontsource CDN; system fonts aren't there, producing 404
-  noise before the Inter fallback kicks in. A name→fallback map applied before
-  the CDN request would remove the noise.
+- **System fonts resolve to fallbacks.** Generic / system family names
+  (`ui-monospace`, `-apple-system`, `system-ui`, `sans-serif`, `serif`,
+  `monospace`, …) are mapped to a fontsource family before any CDN request, so
+  there's no 404 noise: serif → PT Serif, monospace → Roboto Mono, everything
+  else → the configured fallback (Inter by default). The Figma payload still
+  claims the original family name, so Figma renders the real system font if it's
+  installed at the destination.
 - **Figma sandbox is QuickJS.** The `code.js` bundle is transpiled to es2017
   (`vite.config.ts`) because `?.`/`??` aren't supported in the sandbox.
