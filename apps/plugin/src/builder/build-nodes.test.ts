@@ -68,6 +68,47 @@ describe("buildNodes", () => {
     expect((result.root as { fills?: unknown }).fills).toEqual([]);
   });
 
+  it("applies per-side stroke weights for a one-sided border", async () => {
+    // A tab button with `border-bottom: 2px` converts to independent border
+    // weights (top/right/left = 0, bottom = 2). The builder must set the four
+    // per-side stroke weights, not the uniform strokeWeight, or Figma draws the
+    // stroke on all four sides.
+    const changes: Array<FigmaNodeChange> = [
+      {
+        ...base(3, 0, "FRAME"),
+        strokePaints: [
+          {
+            type: "SOLID",
+            color: { r: 0.24, g: 0.52, b: 0.92, a: 1 },
+            opacity: 1,
+            visible: true,
+            blendMode: "NORMAL",
+          },
+        ],
+        strokeWeight: 2,
+        borderTopWeight: 0,
+        borderRightWeight: 0,
+        borderBottomWeight: 2,
+        borderLeftWeight: 0,
+        borderStrokeWeightsIndependent: true,
+      } as FigmaNodeChange,
+    ];
+    const result = await buildNodes(changes, 0, "My Import");
+    const root = result.root as {
+      strokeTopWeight?: number;
+      strokeRightWeight?: number;
+      strokeBottomWeight?: number;
+      strokeLeftWeight?: number;
+      strokeWeight?: number;
+    };
+    expect(root.strokeTopWeight).toBe(0);
+    expect(root.strokeRightWeight).toBe(0);
+    expect(root.strokeBottomWeight).toBe(2);
+    expect(root.strokeLeftWeight).toBe(0);
+    // The uniform strokeWeight must not be set when sides are independent.
+    expect(root.strokeWeight).toBeUndefined();
+  });
+
   it("ignores the converter's reserved DOCUMENT/CANVAS/root-FRAME scaffold", async () => {
     // Shape of a real @woofigma/dom-to-figma document: DOCUMENT(0) -> CANVAS(1) ->
     // ROOT_FRAME(2), then the user's top-level nodes parented at the root frame

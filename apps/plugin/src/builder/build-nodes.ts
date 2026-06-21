@@ -137,9 +137,7 @@ function applyFrame(node: FrameNode, change: FigmaNodeChange): void {
   if (strokes.length > 0) {
     node.strokes = strokes;
   }
-  if (frame.strokeWeight !== undefined) {
-    node.strokeWeight = frame.strokeWeight;
-  }
+  applyStrokeWeights(node, frame);
   const effects = mapEffects(frame.effects);
   if (effects.length > 0) {
     node.effects = effects;
@@ -148,4 +146,26 @@ function applyFrame(node: FrameNode, change: FigmaNodeChange): void {
     node.cornerRadius = frame.cornerRadius;
   }
   applyAutoLayout(node, frame);
+}
+
+// CSS borders can differ per side (e.g. `border-bottom: 2px` only). The
+// converter flags that with `borderStrokeWeightsIndependent` and the four
+// per-side weights. Figma draws a uniform `strokeWeight` on all four sides, so
+// when sides are independent we set the per-side weights instead — a 0 weight
+// means no stroke on that side. Setting `strokeWeight` afterward would collapse
+// them back to uniform, so the two paths are mutually exclusive.
+function applyStrokeWeights(
+  node: FrameNode,
+  frame: FigmaFrameNodeChange
+): void {
+  if (frame.borderStrokeWeightsIndependent) {
+    node.strokeTopWeight = frame.borderTopWeight ?? 0;
+    node.strokeRightWeight = frame.borderRightWeight ?? 0;
+    node.strokeBottomWeight = frame.borderBottomWeight ?? 0;
+    node.strokeLeftWeight = frame.borderLeftWeight ?? 0;
+    return;
+  }
+  if (frame.strokeWeight !== undefined) {
+    node.strokeWeight = frame.strokeWeight;
+  }
 }
