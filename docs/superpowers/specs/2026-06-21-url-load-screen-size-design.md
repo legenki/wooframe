@@ -57,32 +57,49 @@ export async function loadHtmlFromUrl(
 
 Behavior:
 
-1. Build the fetch URL: if `proxyTemplate` includes `{url}`, substitute
-   `encodeURIComponent(targetUrl)`; else fetch `targetUrl` directly.
-2. `fetch` it. On a non-2xx response, throw
-   `Failed to load URL (HTTP <status>).`.
+1. Build the fetch URL:
+   - If `proxyTemplate` is provided, it **must** contain the literal `{url}`.
+     If it doesn't, throw `Proxy template must include {url} placeholder.`
+     immediately (before any fetch) — don't silently fall back to a direct
+     fetch, which would surprise the user who configured a proxy.
+   - With a valid template, replace `{url}` with `encodeURIComponent(targetUrl)`.
+   - With no template, fetch `targetUrl` directly.
+2. `fetch` it (redirects follow by default — fine; no size cap, since the render
+   viewport ceiling `RENDER_HEIGHT` already bounds what gets measured). On a
+   non-2xx response, throw `Failed to load URL (HTTP <status>).`.
 3. Read the body text. Accept it as HTML if the `content-type` header contains
-   `text/html` **or** the trimmed body starts (case-insensitive) with
-   `<!doctype` or `<html` (some proxies omit a correct content-type). Otherwise
-   throw `That URL did not return HTML.`.
+   `text/html` (matched as a substring, so `text/html; charset=utf-8` and other
+   parameterized values pass) **or** the trimmed body starts (case-insensitive)
+   with `<!doctype` or `<html` (some proxies omit a correct content-type).
+   Otherwise throw `That URL did not return HTML.`.
 4. A thrown `fetch` (CORS/network) propagates as an Error; `app.tsx` shows a
    descriptive message.
 
 `app.tsx`:
 
 - A **URL** text input plus a **Proxy template** input (placeholder
-  `https://your-proxy/?url={url}`, with a one-line hint). An "Import from URL"
+  `https://your-proxy/?url={url}`, with a one-line hint such as *"Optional CORS
+  proxy. `{url}` is replaced with the page URL."*). An **"Import from URL"**
   button calls `loadHtmlFromUrl(url, proxyTemplate || undefined)`, then the
   existing `runImport(html)` path (now passing the selected width).
-- Error copy on failure: *"Couldn't load that URL. The site or proxy blocked the
-  request (CORS). Provide a working proxy template, or save the page as .html and
-  drop it here."*
+- The "Import from URL" button is **disabled while the URL field is empty** (and
+  while `busy`), mirroring the existing "Import to Figma" button's
+  `disabled={busy || !html.trim()}`.
+- On failure the URL and proxy inputs are **left populated** (they are plain
+  React state, not cleared on error) so the user can fix and retry.
+- Error copy on failure: *"Couldn't load that URL. The site or your proxy blocked
+  the request (CORS). Try a different proxy or save the page as an .html file."*
 
 ### Manifest
 
 `allowedDomains: ["*"]` (the proxy domain is user-supplied and unknown ahead of
-time). Update `reasoning` to explain: fontsource/unpkg for fonts and bundled
-pages, plus arbitrary user-supplied URLs/proxies for the load-from-URL feature.
+time). The `reasoning` must justify the broad scope clearly, e.g.:
+
+> `["*"]` is required for two reasons: (1) loading webfonts from fontsource
+> (jsDelivr) and React/Babel from unpkg for bundled pages, and (2) the
+> "Load from URL" feature, where the user supplies an arbitrary page URL and an
+> optional CORS proxy — neither host is known ahead of time, so the domains
+> cannot be pre-listed.
 
 ## Unit boundaries
 
@@ -114,6 +131,9 @@ pages, plus arbitrary user-supplied URLs/proxies for the load-from-URL feature.
 5. 200 with no/!html content-type but body starts with `<!doctype html>` →
    accepted (resolves).
 6. `fetch` rejecting (simulated CORS/network) → error propagates.
+7. `proxyTemplate` without `{url}` → throws `Proxy template must include {url}
+   placeholder.` and `fetch` is **never called**.
+8. 200 with `content-type: text/html; charset=utf-8` (parameterized) → accepted.
 
 `render-host` width is covered indirectly; no new render-host test (its iframe
 needs a browser and the width change is a literal substitution). `app.tsx` is not
@@ -125,3 +145,5 @@ unit-tested (consistent with the current codebase, which has no app.tsx test).
 - Auth'd/private pages (a public proxy can't reach them).
 - Per-preset height — height stays auto (`scrollHeight`).
 - Custom arbitrary width input (only the two presets).
+- A preview of the loaded URL before import — on success we go straight to
+  `runImport`, matching the file/paste flows (which also import immediately).
