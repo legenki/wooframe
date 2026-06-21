@@ -98,15 +98,56 @@ describe("createFontsourceLoader generic-family mapping", () => {
     expect(urls.some((u) => u.includes("apple-system@"))).toBe(false);
   });
 
-  it("does not treat a real missing family as generic (no regression)", async () => {
-    // Verdana is not generic: it goes through the normal fetch + fallback path.
-    // The mock 404s the verdana URLs and serves the inter fallback.
+  it("maps Arial to Arimo with no arial fetch", async () => {
+    const { urls } = mockFetch();
+    const load = createFontsourceLoader();
+
+    const file = await load({ family: "Arial", weight: 400, italic: false });
+
+    expect(file.resolvedFamily).toBe("Arimo");
+    expect(urls[0]).toContain("/arimo@");
+    expect(urls.some((u) => u.includes("/arial@"))).toBe(false);
+  });
+
+  it("maps Times New Roman to Tinos even in strict mode", async () => {
+    const { urls } = mockFetch();
+    const load = createFontsourceLoader({ fallbackFamily: null });
+
+    const file = await load({
+      family: "Times New Roman",
+      weight: 400,
+      italic: false,
+    });
+
+    expect(file.resolvedFamily).toBe("Tinos");
+    expect(urls[0]).toContain("/tinos@");
+    expect(urls.some((u) => u.includes("/times-new-roman@"))).toBe(false);
+  });
+
+  it("maps Courier New to Cousine", async () => {
+    const { urls } = mockFetch();
+    const load = createFontsourceLoader();
+
+    const file = await load({
+      family: "Courier New",
+      weight: 400,
+      italic: false,
+    });
+
+    expect(file.resolvedFamily).toBe("Cousine");
+    expect(urls[0]).toContain("/cousine@");
+  });
+
+  it("does not treat a genuinely unknown family as mapped (no regression)", async () => {
+    // Frutiger is in neither the generic nor the web-safe map: it goes through
+    // the normal fetch + fallback path. The mock 404s the frutiger URLs and
+    // serves the inter fallback.
     const urls: Array<string> = [];
     vi.stubGlobal(
       "fetch",
       vi.fn((url: string) => {
         urls.push(url);
-        const ok = !url.includes("/verdana@");
+        const ok = !url.includes("/frutiger@");
         return Promise.resolve(
           new Response(ok ? FAKE_FONT_BYTES : null, { status: ok ? 200 : 404 })
         );
@@ -114,9 +155,9 @@ describe("createFontsourceLoader generic-family mapping", () => {
     );
     const load = createFontsourceLoader();
 
-    const file = await load({ family: "Verdana", weight: 400, italic: false });
+    const file = await load({ family: "Frutiger", weight: 400, italic: false });
 
     expect(file.resolvedFamily).toBe("Inter");
-    expect(urls.some((u) => u.includes("/verdana@"))).toBe(true);
+    expect(urls.some((u) => u.includes("/frutiger@"))).toBe(true);
   });
 });

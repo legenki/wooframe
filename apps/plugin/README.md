@@ -53,12 +53,15 @@ coverage, and deriving gradient direction from the CSS angle.
   alongside jsDelivr, so the nested render iframe can fetch them within the
   plugin CSP and the page hydrates before conversion. Confirmed in live Figma
   testing. Bundles that pin a different CDN would need that host added too.
-- **System fonts resolve to fallbacks.** Generic / system family names
-  (`ui-monospace`, `-apple-system`, `system-ui`, `sans-serif`, `serif`,
-  `monospace`, …) are mapped to a fontsource family before any CDN request, so
-  there's no 404 noise: serif → PT Serif, monospace → Roboto Mono, everything
+- **System & web-safe fonts resolve to fallbacks.** Generic / system family
+  names (`ui-monospace`, `-apple-system`, `system-ui`, `sans-serif`, `serif`,
+  `monospace`, …) and web-safe families fontsource doesn't carry (`Arial`,
+  `Helvetica`, `Times New Roman`, `Courier New`, `Georgia`, `Tahoma`, `Verdana`)
+  are mapped to a fontsource family before any CDN request, so there's no 404
+  noise: serif → PT Serif, monospace → Roboto Mono, Arial → Arimo, Times New
+  Roman → Tinos, Courier New → Cousine (metric-compatible clones), everything
   else → the configured fallback (Inter by default). The Figma payload still
-  claims the original family name, so Figma renders the real system font if it's
+  claims the original family name, so Figma renders the real font if it's
   installed at the destination.
 - **Figma sandbox is QuickJS.** The `code.js` bundle is transpiled to es2017
   (`vite.config.ts`) because `?.`/`??` aren't supported in the sandbox.

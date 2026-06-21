@@ -192,20 +192,46 @@ const GENERIC_FAMILY_MAP: Record<string, string> = {
 };
 
 /**
+ * Web-safe / system-installed families that fontsource doesn't carry, mapped to
+ * metric-compatible fontsource families so layout doesn't shift. Arimo, Tinos,
+ * and Cousine are Google's metric clones of Arial, Times New Roman, and Courier
+ * New. Unlike the sans-generic sentinel, these are fixed families and resolve
+ * even in strict mode. Keys are `familyToSlug` output.
+ */
+const WEBSAFE_FAMILY_MAP: Record<string, string> = {
+  arial: "Arimo",
+  helvetica: "Arimo",
+  "helvetica-neue": "Arimo",
+  "times-new-roman": "Tinos",
+  times: "Tinos",
+  "courier-new": "Cousine",
+  courier: "Cousine",
+  georgia: "PT Serif",
+  tahoma: "Inter",
+  verdana: "Inter",
+  "segoe-ui": "Inter",
+};
+
+/**
  * Resolve a slug to its substitute fontsource family, or `null` if the slug is
- * not a known generic. For sans-category generics the substitute is the
- * configured `fallbackFamily` (which may itself be `null` in strict mode); the
- * caller turns that into an explicit error.
+ * neither a known generic nor a web-safe alias. For sans-category generics the
+ * substitute is the configured `fallbackFamily` (which may itself be `null` in
+ * strict mode); the caller turns that into an explicit error. Web-safe aliases
+ * map to fixed families and never depend on `fallbackFamily`.
  */
 function resolveGenericFamily(
   familyKey: string,
   fallbackFamily: string | null
 ): { family: string | null } | null {
-  const mapped = GENERIC_FAMILY_MAP[familyKey];
-  if (mapped === undefined) {
-    return null;
+  const generic = GENERIC_FAMILY_MAP[familyKey];
+  if (generic !== undefined) {
+    return { family: generic === SANS_FALLBACK ? fallbackFamily : generic };
   }
-  return { family: mapped === SANS_FALLBACK ? fallbackFamily : mapped };
+  const websafe = WEBSAFE_FAMILY_MAP[familyKey];
+  if (websafe !== undefined) {
+    return { family: websafe };
+  }
+  return null;
 }
 
 /**

@@ -80,16 +80,17 @@ Open edges, roughly by increasing effort:
 
 1. **Raster image fills in the plugin** — wire `figma.createImage` so bitmap
    fills land as real images on the canvas.
-2. **Web-safe font 404s** — concrete families that fontsource doesn't mirror
-   (e.g. `Arial`, `Tahoma`) still 404 once before the Inter fallback. Generic
-   names are already pre-mapped (below); a web-safe → fontsource alias table
-   would close the remaining gap.
 
-Two earlier limitations are now resolved:
+Earlier limitations now resolved:
 
 - **System / generic font names** (`ui-monospace`, `-apple-system`,
   `sans-serif`, `serif`, `monospace`, …) are mapped to fontsource families
   before any CDN request, so they no longer 404.
+- **Web-safe font 404s** — concrete families fontsource doesn't mirror
+  (`Arial`/`Helvetica` → Arimo, `Times New Roman` → Tinos, `Courier New` →
+  Cousine, `Georgia` → PT Serif, `Tahoma`/`Verdana` → Inter) are pre-mapped to
+  metric-compatible families, so they no longer 404 either. The payload keeps
+  the requested name, so Figma renders the real font if it's installed.
 - **Bundled / self-unpacking pages** (SkillATS-style `dc-runtime` exports that
   load React/ReactDOM/Babel from unpkg at unpack time) now hydrate: the plugin
   manifest's `allowedDomains` includes `https://unpkg.com`, so the nested render
