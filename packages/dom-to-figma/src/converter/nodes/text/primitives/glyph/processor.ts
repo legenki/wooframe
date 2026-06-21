@@ -12,6 +12,57 @@ import type { FontMetrics, LoadedFont } from "../font";
 import { pathCommandsToGlyphBytes } from "./encoder";
 
 /**
+ * Symbol fonts (fontsource families) tried in order when the primary font lacks
+ * a glyph. Coverage verified with fontkit: Math supplies most geometric/
+ * technical/math symbols; Symbols supplies the rest (e.g. U+2315). Loaded at
+ * weight 400 normal — symbol glyphs are largely weight-agnostic.
+ */
+export const SYMBOL_FALLBACK_FAMILIES = ["Noto Sans Math", "Noto Sans Symbols"];
+
+/**
+ * Codepoints in `text` whose glyph is `.notdef` (id 0) in the given font.
+ * Pure: no side effects. Whitespace is treated like any other character; the
+ * caller already handles space specially downstream.
+ */
+export function collectCodepointsMissingFromFont(
+  loadedFont: LoadedFont,
+  text: string
+): Set<number> {
+  const missing = new Set<number>();
+  for (const char of new Set(text)) {
+    const cp = char.codePointAt(0);
+    if (cp === undefined) {
+      continue;
+    }
+    if (loadedFont.font.glyphForCodePoint(cp).id === 0) {
+      missing.add(cp);
+    }
+  }
+  return missing;
+}
+
+/**
+ * Pick the font to draw a codepoint from: the primary if it has the glyph,
+ * else the first fallback that does, else null. Returns the LoadedFont itself
+ * so the caller takes both the glyph and its advance from one object. Pure.
+ */
+export function resolveGlyphFont(
+  primary: LoadedFont,
+  fallbacks: Array<LoadedFont>,
+  codePoint: number
+): LoadedFont | null {
+  if (primary.font.glyphForCodePoint(codePoint).id !== 0) {
+    return primary;
+  }
+  for (const fallback of fallbacks) {
+    if (fallback.font.glyphForCodePoint(codePoint).id !== 0) {
+      return fallback;
+    }
+  }
+  return null;
+}
+
+/**
  * Processed glyph data with path and byte information.
  *
  * Complete glyph representation ready for Figma text node construction.
