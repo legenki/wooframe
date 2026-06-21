@@ -17,7 +17,8 @@ figma.ui.onmessage = async (msg: UiToCode) => {
     const { root, summary } = await buildNodes(
       msg.nodeChanges,
       ROOT_PARENT_LOCAL_ID,
-      msg.rootName
+      msg.rootName,
+      msg.blobs
     );
     figma.currentPage.appendChild(root);
     figma.viewport.scrollAndZoomIntoView([root]);

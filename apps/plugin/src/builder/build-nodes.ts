@@ -27,7 +27,8 @@ export type BuildResult = {
 export async function buildNodes(
   changes: Array<FigmaNodeChange>,
   rootParentLocalId: number,
-  rootName: string
+  rootName: string,
+  blobs: Array<{ bytes: Array<number> }> = []
 ): Promise<BuildResult> {
   const tree = buildTree(changes, rootParentLocalId);
   const missingFonts = new Set<string>();
@@ -43,7 +44,7 @@ export async function buildNodes(
         node = await buildText(change as FigmaTextNodeChange, missingFonts);
       } else {
         node = figma.createFrame();
-        applyFrame(node as FrameNode, change);
+        applyFrame(node as FrameNode, change, blobs, warnings);
       }
       node.name = change.name;
       applyGeometry(node, change, warnings);
@@ -127,13 +128,19 @@ function applyGeometry(
   }
 }
 
-function applyFrame(node: FrameNode, change: FigmaNodeChange): void {
+function applyFrame(
+  node: FrameNode,
+  change: FigmaNodeChange,
+  blobs: Array<{ bytes: Array<number> }>,
+  warnings: Array<string>
+): void {
   const frame = change as FigmaFrameNodeChange;
+  const ctx = { blobs, warnings, nodeName: change.name };
   // Always assign, even when empty: figma.createFrame() ships with a default
   // opaque white fill, so a transparent container (empty fillPaints) must clear
   // it rather than inherit the default white.
-  node.fills = mapPaints(frame.fillPaints);
-  const strokes = mapPaints(frame.strokePaints);
+  node.fills = mapPaints(frame.fillPaints, ctx);
+  const strokes = mapPaints(frame.strokePaints, ctx);
   if (strokes.length > 0) {
     node.strokes = strokes;
   }

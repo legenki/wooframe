@@ -5,6 +5,7 @@ export type UiToCode =
       type: "import-nodes";
       nodeChanges: Array<FigmaNodeChange>;
       rootName: string;
+      blobs: Array<{ bytes: Array<number> }>;
     }
   | { type: "cancel" };
 

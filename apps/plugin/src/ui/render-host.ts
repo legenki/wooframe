@@ -14,6 +14,7 @@ const RENDER_HEIGHT = 4096;
 export type RenderResult = {
   nodeChanges: Array<FigmaNodeChange>;
   rootName: string;
+  blobs: Array<{ bytes: Array<number> }>;
 };
 
 export async function renderAndConvert(
@@ -42,7 +43,11 @@ export async function renderAndConvert(
       height,
       name: rootName,
     });
-    return { nodeChanges: result.document.nodeChanges, rootName };
+    return {
+      nodeChanges: result.document.nodeChanges,
+      rootName,
+      blobs: result.document.blobs,
+    };
   } finally {
     iframe.remove();
   }

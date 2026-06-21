@@ -33,7 +33,13 @@ export async function buildText(
     node.textAlignHorizontal =
       change.textAlignHorizontal as TextNode["textAlignHorizontal"];
   }
-  const fills = mapPaints(change.fillPaints);
+  // Text fills are SOLID/gradient only (never IMAGE), so an empty blob list and
+  // a throwaway warnings sink are fine here.
+  const fills = mapPaints(change.fillPaints, {
+    blobs: [],
+    warnings: [],
+    nodeName: change.name,
+  });
   if (fills.length > 0) {
     node.fills = fills;
   }

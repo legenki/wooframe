@@ -59,8 +59,11 @@ export function App() {
     setIsError(false);
     setStatus("Rendering and converting…");
     try {
-      const { nodeChanges, rootName } = await renderAndConvert(source, name);
-      post({ type: "import-nodes", nodeChanges, rootName });
+      const { nodeChanges, rootName, blobs } = await renderAndConvert(
+        source,
+        name
+      );
+      post({ type: "import-nodes", nodeChanges, rootName, blobs });
     } catch (error) {
       setBusy(false);
       setIsError(true);
