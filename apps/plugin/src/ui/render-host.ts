@@ -8,7 +8,8 @@ import type { FigmaNodeChange } from "@woofigma/dom-to-figma/internal";
 const STABILIZE_MS = 400;
 const LOAD_TIMEOUT_MS = 10_000;
 // Generous viewport so wide/tall pages aren't clipped before measurement.
-const RENDER_WIDTH = 1440;
+// Default render width (Macbook preset). Callers override per screen-size choice.
+const DEFAULT_RENDER_WIDTH = 1440;
 const RENDER_HEIGHT = 4096;
 
 export type RenderResult = {
@@ -19,11 +20,12 @@ export type RenderResult = {
 
 export async function renderAndConvert(
   html: string,
-  rootName: string
+  rootName: string,
+  width: number = DEFAULT_RENDER_WIDTH
 ): Promise<RenderResult> {
   const iframe = document.createElement("iframe");
   iframe.setAttribute("sandbox", "allow-scripts allow-same-origin");
-  iframe.style.cssText = `position:fixed;left:-99999px;top:0;width:${RENDER_WIDTH}px;height:${RENDER_HEIGHT}px;border:0;visibility:hidden`;
+  iframe.style.cssText = `position:fixed;left:-99999px;top:0;width:${width}px;height:${RENDER_HEIGHT}px;border:0;visibility:hidden`;
   document.body.appendChild(iframe);
 
   try {
