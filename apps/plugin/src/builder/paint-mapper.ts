@@ -7,7 +7,16 @@ const DEFAULT_GRADIENT_TRANSFORM = [
   [0, 1, 0],
 ];
 
-export function mapPaints(paints: Array<FigmaPaint> | undefined): Array<Paint> {
+export type PaintContext = {
+  blobs: Array<{ bytes: Array<number> }>;
+  warnings: Array<string>;
+  nodeName: string;
+};
+
+export function mapPaints(
+  paints: Array<FigmaPaint> | undefined,
+  ctx: PaintContext
+): Array<Paint> {
   if (!paints) {
     return [];
   }
@@ -33,8 +42,38 @@ export function mapPaints(paints: Array<FigmaPaint> | undefined): Array<Paint> {
         visible: p.visible,
         blendMode: p.blendMode as BlendMode,
       });
+    } else if (p.type === "IMAGE") {
+      const fill = mapImagePaint(p, ctx);
+      if (fill) {
+        out.push(fill);
+      }
     }
-    // IMAGE: skipped in V1.
   }
   return out;
+}
+
+// figma.createImage accepts PNG, JPEG, and GIF. The converter always emits PNG
+// (it normalizes internally), so that's what we handle here. JPEG would work
+// unchanged; WebP is not supported by createImage.
+function mapImagePaint(
+  paint: Extract<FigmaPaint, { type: "IMAGE" }>,
+  ctx: PaintContext
+): Paint | null {
+  const index = paint.image.dataBlob;
+  if (typeof index !== "number" || index < 0 || index >= ctx.blobs.length) {
+    ctx.warnings.push(
+      `"${ctx.nodeName}": image fill skipped (bad blob index ${index} of ${ctx.blobs.length})`
+    );
+    return null;
+  }
+  try {
+    const bytes = new Uint8Array(ctx.blobs[index]?.bytes ?? []);
+    const image = figma.createImage(bytes);
+    return { type: "IMAGE", imageHash: image.hash, scaleMode: "FILL" };
+  } catch (error) {
+    ctx.warnings.push(
+      `"${ctx.nodeName}": image fill skipped (${(error as Error).message}, blob ${index})`
+    );
+    return null;
+  }
 }
