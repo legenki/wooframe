@@ -1,4 +1,4 @@
-import type { FigmaNodeChange } from "@figit/dom-to-figma/internal";
+import type { FigmaNodeChange } from "@woofigma/dom-to-figma/internal";
 import { beforeEach, describe, expect, it } from "vitest";
 import { buildNodes } from "./build-nodes";
 import { createFigmaMock } from "./figma-mock";
@@ -58,7 +58,7 @@ describe("buildNodes", () => {
   });
 
   it("ignores the converter's reserved DOCUMENT/CANVAS/root-FRAME scaffold", async () => {
-    // Shape of a real @figit/dom-to-figma document: DOCUMENT(0) -> CANVAS(1) ->
+    // Shape of a real @woofigma/dom-to-figma document: DOCUMENT(0) -> CANVAS(1) ->
     // ROOT_FRAME(2), then the user's top-level nodes parented at the root frame
     // (localID 2). buildNodes is called with rootParentLocalId = 2.
     const reserved: Array<FigmaNodeChange> = [

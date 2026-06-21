@@ -41,7 +41,7 @@ importers:
 
   apps/plugin:
     dependencies:
-      '@figit/dom-to-figma':
+      '@woofigma/dom-to-figma':
         specifier: workspace:*
         version: link:../../packages/dom-to-figma
       react:
@@ -78,7 +78,7 @@ importers:
 
   packages/dom-to-figma:
     dependencies:
-      '@figit/fig-kiwi':
+      '@woofigma/fig-kiwi':
         specifier: workspace:*
         version: link:../fig-kiwi
       colorjs.io:

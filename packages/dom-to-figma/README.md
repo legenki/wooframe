@@ -1,9 +1,9 @@
-# @figit/dom-to-figma
+# @woofigma/dom-to-figma
 
 Convert any DOM tree to a Figma clipboard payload, in the browser.
 
 ```ts
-import { createFigmaConverter } from "@figit/dom-to-figma";
+import { createFigmaConverter } from "@woofigma/dom-to-figma";
 
 const figma = createFigmaConverter();
 
@@ -22,7 +22,7 @@ Paste in Figma. Done.
 ## Install
 
 ```sh
-pnpm add @figit/dom-to-figma
+pnpm add @woofigma/dom-to-figma
 ```
 
 ## What it does
@@ -78,7 +78,7 @@ Repeated `convert()` calls on the same converter reuse cached fonts and images. 
 Default: `createFontsourceLoader()` pulls fonts from fontsource via jsDelivr's CDN. Covers all Google Fonts plus other open-source families. No API key required.
 
 ```ts
-import { createFontsourceLoader } from "@figit/dom-to-figma";
+import { createFontsourceLoader } from "@woofigma/dom-to-figma";
 
 const figma = createFigmaConverter({
   fontLoader: createFontsourceLoader({ subset: "latin-ext" }),
@@ -88,7 +88,7 @@ const figma = createFigmaConverter({
 For non-fontsource fonts, write your own loader:
 
 ```ts
-import type { FontLoader } from "@figit/dom-to-figma";
+import type { FontLoader } from "@woofigma/dom-to-figma";
 
 const myFontLoader: FontLoader = async ({ family, weight, italic }) => {
   const url = await myFontCDN(family, weight, italic);
@@ -102,7 +102,7 @@ const myFontLoader: FontLoader = async ({ family, weight, italic }) => {
 Default: `createDirectImageLoader()` does a direct `fetch(src)`. Cross-origin images without CORS need a custom loader, typically a proxy chain:
 
 ```ts
-import type { ImageLoader } from "@figit/dom-to-figma";
+import type { ImageLoader } from "@woofigma/dom-to-figma";
 
 const myImageLoader: ImageLoader = async ({ src }) => {
   const url = `https://my-proxy.example/?url=${encodeURIComponent(src)}`;
@@ -122,7 +122,7 @@ The package re-encodes WebP/AVIF/etc. to PNG internally, so the loader only need
 `classify` lets you override how DOM elements map to Figma node kinds. The default classifier returns `text`, `image`, `vector`, `frame`, `group`, `form-with-placeholder`, or `skip`:
 
 ```ts
-import type { Classify } from "@figit/dom-to-figma";
+import type { Classify } from "@woofigma/dom-to-figma";
 
 const classify: Classify = (element, defaultKind) => {
   if (element.dataset.role === "text-wrapper") {

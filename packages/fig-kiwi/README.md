@@ -1,9 +1,9 @@
-# @figit/fig-kiwi
+# @woofigma/fig-kiwi
 
 Encode Figma's Kiwi binary format and HTML clipboard envelope.
 
 ```ts
-import { encodeFigmaData, composeClipboardHtml } from "@figit/fig-kiwi";
+import { encodeFigmaData, composeClipboardHtml } from "@woofigma/fig-kiwi";
 
 const { figBytes, base64 } = encodeFigmaData(message);
 const html = composeClipboardHtml(base64, { dataType: "scene", fileKey: "TEST", pasteID: 123 });
@@ -35,4 +35,4 @@ cat clipboard.html | pnpm extract-schema -   # from stdin
 
 ## License
 
-[MIT](./LICENSE) — Figit.
+[MIT](./LICENSE) — Woofigma.

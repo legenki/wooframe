@@ -1,9 +1,9 @@
-# Figit Import (Figma plugin)
+# Woofigma Import (Figma plugin)
 
 Import an HTML file (or pasted markup) into editable Figma layers — entirely
 inside Figma, no clipboard `Cmd+V` step.
 
-Built on [`@figit/dom-to-figma`](../../packages/dom-to-figma): the plugin UI
+Built on [`@woofigma/dom-to-figma`](../../packages/dom-to-figma): the plugin UI
 renders the HTML in a nested sandbox iframe, runs the converter against that
 live DOM, and the sandbox (`code.ts`) maps the resulting `FigmaNodeChange[]`
 to Plugin API nodes.
@@ -25,7 +25,7 @@ Produces two self-contained artifacts in `apps/plugin/dist/`:
 
 1. Figma desktop → Plugins → Development → **Import plugin from manifest…**
 2. Choose `apps/plugin/manifest.json`.
-3. Run **Figit Import** from Plugins → Development.
+3. Run **Woofigma Import** from Plugins → Development.
 
 ## Manual E2E
 

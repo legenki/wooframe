@@ -12,7 +12,7 @@
     "lint": "biome check"
   },
   "dependencies": {
-    "@figit/dom-to-figma": "workspace:*",
+    "@woofigma/dom-to-figma": "workspace:*",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
   },

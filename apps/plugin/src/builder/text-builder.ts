@@ -1,4 +1,4 @@
-import type { FigmaTextNodeChange } from "@figit/dom-to-figma/internal";
+import type { FigmaTextNodeChange } from "@woofigma/dom-to-figma/internal";
 import { loadFontWithFallback } from "./fonts";
 import { mapPaints } from "./paint-mapper";
 

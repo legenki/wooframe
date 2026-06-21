@@ -1,4 +1,4 @@
-import type { FigmaPaint } from "@figit/dom-to-figma/internal";
+import type { FigmaPaint } from "@woofigma/dom-to-figma/internal";
 
 // Figma's GradientPaint requires a gradientTransform; a top-to-bottom default
 // is used for V1. Deriving the real direction from the CSS angle is future work.

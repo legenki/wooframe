@@ -2,7 +2,7 @@ import type {
   FigmaFrameNodeChange,
   FigmaNodeChange,
   FigmaTextNodeChange,
-} from "@figit/dom-to-figma/internal";
+} from "@woofigma/dom-to-figma/internal";
 import { applyAutoLayout } from "./auto-layout";
 import { mapEffects } from "./effect-mapper";
 import { mapPaints } from "./paint-mapper";

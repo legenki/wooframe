@@ -1,4 +1,4 @@
-import type { FigmaPaint } from "@figit/dom-to-figma/internal";
+import type { FigmaPaint } from "@woofigma/dom-to-figma/internal";
 import { describe, expect, it } from "vitest";
 import { mapPaints } from "./paint-mapper";
 

@@ -1,4 +1,4 @@
-import type { FigmaEffect } from "@figit/dom-to-figma/internal";
+import type { FigmaEffect } from "@woofigma/dom-to-figma/internal";
 import { describe, expect, it } from "vitest";
 import { mapEffects } from "./effect-mapper";
 

@@ -1,17 +1,17 @@
 {
-  "name": "@figit/dom-to-figma",
+  "name": "@woofigma/dom-to-figma",
   "version": "0.0.2",
   "description": "Convert any DOM tree to a Figma clipboard payload, in the browser.",
   "license": "MIT",
-  "author": "Figit <https://figit.design>",
-  "homepage": "https://github.com/figitdesign/web-to-figma#readme",
+  "author": "legenki",
+  "homepage": "https://github.com/legenki/woofigma#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/figitdesign/web-to-figma.git",
+    "url": "git+https://github.com/legenki/woofigma.git",
     "directory": "packages/dom-to-figma"
   },
   "bugs": {
-    "url": "https://github.com/figitdesign/web-to-figma/issues"
+    "url": "https://github.com/legenki/woofigma/issues"
   },
   "keywords": [
     "figma",
@@ -70,7 +70,7 @@
     "lint": "biome check"
   },
   "dependencies": {
-    "@figit/fig-kiwi": "workspace:*",
+    "@woofigma/fig-kiwi": "workspace:*",
     "colorjs.io": "^0.6.1",
     "fontkit": "^2.0.4"
   },

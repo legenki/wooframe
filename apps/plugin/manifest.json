@@ -1,6 +1,6 @@
 {
-  "name": "Figit Import",
-  "id": "figit-import-dev",
+  "name": "Woofigma Import",
+  "id": "woofigma-import-dev",
   "api": "1.0.0",
   "editorType": ["figma"],
   "main": "dist/code.js",

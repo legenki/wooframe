@@ -2,7 +2,7 @@ import {
   composeClipboardHtml,
   encodeFigmaData,
   toClipboardItem,
-} from "@figit/fig-kiwi";
+} from "@woofigma/fig-kiwi";
 import { BlobManager } from "./converter/blob-manager";
 import { createFontCache } from "./converter/font-cache";
 import { createImageCache } from "./converter/image-cache";

@@ -1,4 +1,4 @@
-import type { FigmaFrameNodeChange } from "@figit/dom-to-figma/internal";
+import type { FigmaFrameNodeChange } from "@woofigma/dom-to-figma/internal";
 import { describe, expect, it } from "vitest";
 import { applyAutoLayout } from "./auto-layout";
 

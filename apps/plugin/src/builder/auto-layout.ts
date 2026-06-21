@@ -1,4 +1,4 @@
-import type { FigmaFrameNodeChange } from "@figit/dom-to-figma/internal";
+import type { FigmaFrameNodeChange } from "@woofigma/dom-to-figma/internal";
 
 export function applyAutoLayout(
   node: FrameNode,

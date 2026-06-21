@@ -1,4 +1,4 @@
-import type { FigmaNodeChange } from "@figit/dom-to-figma/internal";
+import type { FigmaNodeChange } from "@woofigma/dom-to-figma/internal";
 import { describe, expect, it } from "vitest";
 import { buildTree } from "./tree";
 

@@ -1,5 +1,5 @@
-import { createFigmaConverter } from "@figit/dom-to-figma";
-import type { FigmaNodeChange } from "@figit/dom-to-figma/internal";
+import { createFigmaConverter } from "@woofigma/dom-to-figma";
+import type { FigmaNodeChange } from "@woofigma/dom-to-figma/internal";
 
 // Heuristic delay after `load` for bundled pages to finish unpacking into the
 // DOM. 400ms covers the exported files tested so far; hydration-heavy pages may

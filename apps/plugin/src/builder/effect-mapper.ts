@@ -1,4 +1,4 @@
-import type { FigmaEffect } from "@figit/dom-to-figma/internal";
+import type { FigmaEffect } from "@woofigma/dom-to-figma/internal";
 
 export function mapEffects(
   effects: Array<FigmaEffect> | undefined
