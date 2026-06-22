@@ -27,3 +27,6 @@ __screenshots__
 
 # pnpm pack output
 *.tgz
+
+# Local test snapshots / scratch HTML (not committed)
+docs/testhtml/
