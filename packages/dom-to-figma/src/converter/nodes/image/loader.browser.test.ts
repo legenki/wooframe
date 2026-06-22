@@ -92,3 +92,15 @@ describe("undecodable image isolation", () => {
     await expect(processImageFile(garbage)).rejects.toBeDefined();
   });
 });
+
+describe("convertToPng SVG fallback", () => {
+  it("transcodes an SVG (createImageBitmap can't, <img> can)", async () => {
+    const svg = `data:image/svg+xml;base64,${btoa(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="4" height="4"><rect width="4" height="4" fill="red"/></svg>'
+    )}`;
+    const file = await decodeImageBytes(svg);
+    const info = await processImageFile(file);
+    expect(info.bytes.slice(0, 4)).toEqual([0x89, 0x50, 0x4e, 0x47]);
+    expect(info.bytes.length).toBeGreaterThan(8);
+  });
+});

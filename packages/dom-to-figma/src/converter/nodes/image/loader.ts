@@ -100,8 +100,18 @@ function isFigmaSupportedFormat(mimeType: string): boolean {
 }
 
 async function convertToPng(file: ImageFile): Promise<ArrayBuffer> {
-  const sourceBlob = new Blob([file.bytes], { type: file.mimeType });
-  const bitmap = await createImageBitmap(sourceBlob);
+  const blob = new Blob([file.bytes], { type: file.mimeType });
+  try {
+    return await decodeViaBitmap(blob);
+  } catch {
+    // createImageBitmap can't decode SVG (and some other sources); the <img>
+    // path rasterizes anything the browser can render. Throws if it also fails.
+    return await decodeViaImg(blob);
+  }
+}
+
+async function decodeViaBitmap(blob: Blob): Promise<ArrayBuffer> {
+  const bitmap = await createImageBitmap(blob);
   try {
     const canvas = document.createElement("canvas");
     canvas.width = bitmap.width;
@@ -111,11 +121,43 @@ async function convertToPng(file: ImageFile): Promise<ArrayBuffer> {
       throw new Error("Failed to create canvas for PNG conversion");
     }
     ctx.drawImage(bitmap, 0, 0);
-    const pngBlob = await canvasToBlob(canvas, "image/png", PNG_QUALITY);
-    return await pngBlob.arrayBuffer();
+    return await canvasToPngBytes(canvas);
   } finally {
     bitmap.close();
   }
+}
+
+async function decodeViaImg(blob: Blob): Promise<ArrayBuffer> {
+  const objectUrl = URL.createObjectURL(blob);
+  try {
+    const img = await loadImageElement(objectUrl);
+    const canvas = document.createElement("canvas");
+    canvas.width = img.naturalWidth;
+    canvas.height = img.naturalHeight;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      throw new Error("Failed to create canvas for PNG conversion");
+    }
+    ctx.drawImage(img, 0, 0);
+    return await canvasToPngBytes(canvas);
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
+}
+
+function loadImageElement(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
+    img.src = src;
+  });
+}
+
+function canvasToPngBytes(canvas: HTMLCanvasElement): Promise<ArrayBuffer> {
+  return canvasToBlob(canvas, "image/png", PNG_QUALITY).then((b) =>
+    b.arrayBuffer()
+  );
 }
 
 function canvasToBlob(
