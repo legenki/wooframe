@@ -61,12 +61,27 @@ The set, grouped:
   `stroke-opacity`, `stroke-dasharray`, `stroke-linecap`, `stroke-linejoin`,
   `clip-rule`.
 
-**Maintenance (key long-term risk):** the whitelist lives as a single named
-constant array at the top of `snapshot.js` with a comment:
+**Maintenance — enforced by a guard test, not just a comment (this is the
+design's main long-term risk, so it gets a mechanism):**
 
-> Keep in sync with the CSS properties read by the converter in
-> `packages/dom-to-figma/src/converter`. When the converter starts reading a new
-> property, add it here.
+The whitelist lives as a single named constant array (`SNAPSHOT_STYLE_PROPS`) at
+the top of `snapshot.js`, with a comment pointing at the converter. But comments
+rot, so a **guard test** mechanically enforces the sync:
+
+- A test (`snapshot-whitelist.test.ts`, node project) walks
+  `packages/dom-to-figma/src/converter/**/*.ts` (excluding `.test.ts`), extracts
+  every property the converter reads — `computedStyle.fooBar` (camel→kebab) and
+  `getPropertyValue("foo-bar")` — into a set, and asserts that set is a
+  **subset** of `SNAPSHOT_STYLE_PROPS`.
+- If the converter starts reading a property the whitelist lacks, the test fails
+  with the missing property name → the snapshot would silently drop it, so the
+  build goes red until the whitelist is updated.
+- The extraction is verified deterministic: it currently yields exactly the 55
+  properties listed below. The assertion is subset (converter ⊆ whitelist), not
+  equality, so the whitelist may intentionally carry a few extra props (e.g.
+  shorthand `padding`/`border-width` alongside longhands) without failing.
+
+This converts "remember to update the whitelist" from discipline into a CI gate.
 
 ### Specificity / ordering
 
@@ -90,7 +105,10 @@ therefore contains exactly the whitelisted computed values.
 ## Files
 
 - `apps/plugin/bookmarklet/snapshot.js` — readable, commented source (the
-  function under test).
+  function under test); exports `SNAPSHOT_STYLE_PROPS` and the inlining function
+  for the tests.
+- `apps/plugin/bookmarklet/snapshot-whitelist.test.ts` — the guard test that
+  diffs the converter's read-set against `SNAPSHOT_STYLE_PROPS` (node project).
 - `apps/plugin/bookmarklet/snapshot.bookmarklet.txt` — the ready-to-paste,
   minified `javascript:` one-liner.
 - `apps/plugin/bookmarklet/README.md` — short local instructions: how to install
@@ -121,6 +139,11 @@ function from `snapshot.js` against a constructed DOM:
 4. The output is a full HTML document beginning with `<!doctype html>`.
 5. A page containing a `::before` pseudo-element and a web-component with a
    `shadowRoot` does **not** throw — the walk completes and ignores them.
+6. **Whitelist guard** (`snapshot-whitelist.test.ts`, node): extract the
+   converter's read CSS properties from `packages/dom-to-figma/src/converter` and
+   assert they are all present in `SNAPSHOT_STYLE_PROPS`. Fails (naming the
+   missing property) if the converter starts reading something the whitelist
+   lacks.
 
 The minification / `javascript:` wrapping is not tested (trivial transform).
 
