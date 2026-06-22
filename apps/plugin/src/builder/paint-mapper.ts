@@ -42,7 +42,7 @@ export function mapPaints(
       out.push({
         type: "SOLID",
         color: { r: p.color.r, g: p.color.g, b: p.color.b },
-        opacity: p.color.a,
+        opacity: p.opacity,
         visible: p.visible,
         blendMode: p.blendMode as BlendMode,
       });

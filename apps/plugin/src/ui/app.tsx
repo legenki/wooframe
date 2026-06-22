@@ -43,6 +43,12 @@ export function App() {
       if (!msg) {
         return;
       }
+      if (msg.type === "import-progress") {
+        setBusy(true);
+        setIsError(false);
+        setStatus(msg.message);
+        return;
+      }
       setBusy(false);
       if (msg.type === "import-error") {
         setIsError(true);

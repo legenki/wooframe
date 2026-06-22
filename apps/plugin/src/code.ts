@@ -18,7 +18,15 @@ figma.ui.onmessage = async (msg: UiToCode) => {
       msg.nodeChanges,
       ROOT_PARENT_LOCAL_ID,
       msg.rootName,
-      msg.blobs
+      msg.blobs,
+      (message, built, total) => {
+        figma.ui.postMessage({
+          type: "import-progress",
+          message,
+          built,
+          total,
+        });
+      }
     );
     figma.currentPage.appendChild(root);
     figma.viewport.scrollAndZoomIntoView([root]);

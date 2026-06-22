@@ -29,12 +29,14 @@ function imagePaint(dataBlob: number | undefined): FigmaPaint {
 }
 
 describe("mapPaints", () => {
-  it("maps a solid paint and splits alpha into opacity", () => {
+  it("maps a solid paint carrying alpha in opacity", () => {
+    // The converter always emits alpha in `opacity` (color.a stays 1); see
+    // cssColorToFigmaColor / createSolidPaint.
     const paints: Array<FigmaPaint> = [
       {
         type: "SOLID",
-        color: { r: 1, g: 0, b: 0, a: 0.5 },
-        opacity: 1,
+        color: { r: 1, g: 0, b: 0, a: 1 },
+        opacity: 0.5,
         visible: true,
         blendMode: "NORMAL",
       },

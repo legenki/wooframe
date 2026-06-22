@@ -10,7 +10,7 @@ const STABILIZE_MS = 400;
 // Generous viewport so wide/tall pages aren't clipped before measurement.
 // Default render width (Macbook preset). Callers override per screen-size choice.
 const DEFAULT_RENDER_WIDTH = 1440;
-const RENDER_HEIGHT = 4096;
+const RENDER_HEIGHT = 1080;
 
 export type RenderResult = {
   nodeChanges: Array<FigmaNodeChange>;
@@ -40,7 +40,7 @@ export async function renderAndConvert(
 
     // Match the iframe viewport to the real content height so position:fixed
     // elements (positioned against view.innerHeight in the converter) land
-    // correctly on tall pages, instead of against the initial 4096px viewport.
+    // correctly on tall pages, instead of against the initial RENDER_HEIGHT.
     iframe.style.height = `${height}px`;
 
     const converter = createFigmaConverter();

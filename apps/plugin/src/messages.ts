@@ -18,4 +18,10 @@ export type CodeToUi =
       missingFonts: Array<string>;
       warnings: Array<string>;
     }
+  | {
+      type: "import-progress";
+      message: string;
+      built?: number;
+      total?: number;
+    }
   | { type: "import-error"; message: string };

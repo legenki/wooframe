@@ -28,7 +28,8 @@ export async function buildNodes(
   changes: Array<FigmaNodeChange>,
   rootParentLocalId: number,
   rootName: string,
-  blobs: Array<{ bytes: Array<number> }> = []
+  blobs: Array<{ bytes: Array<number> }> = [],
+  onProgress?: (message: string, built: number, total: number) => void
 ): Promise<BuildResult> {
   const tree = buildTree(changes, rootParentLocalId);
   const missingFonts = new Set<string>();
@@ -36,8 +37,19 @@ export async function buildNodes(
   let built = 0;
   let skipped = 0;
 
+  const totalNodes = countTreeNodes(tree);
+
   async function makeNode(treeNode: TreeNode): Promise<SceneNode | null> {
     const change = treeNode.change;
+
+    if (built % 50 === 0 && built > 0) {
+      onProgress?.(
+        `Building node ${built} of ${totalNodes}...`,
+        built,
+        totalNodes
+      );
+      await new Promise((resolve) => setTimeout(resolve, 1));
+    }
     try {
       let node: SceneNode;
       if (change.type === "TEXT") {
@@ -92,7 +104,7 @@ export async function buildNodes(
       // Total is the number of buildable nodes in the tree (the converter's
       // reserved DOCUMENT/CANVAS/root-FRAME scaffold is excluded by buildTree),
       // so built + skipped accounts for every node we attempted.
-      total: countTreeNodes(tree),
+      total: totalNodes,
       skipped,
       missingFonts: [...missingFonts],
       warnings,
