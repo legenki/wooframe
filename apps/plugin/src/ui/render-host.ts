@@ -38,6 +38,11 @@ export async function renderAndConvert(
     const width = Math.max(1, Math.round(doc.documentElement.scrollWidth));
     const height = Math.max(1, Math.round(doc.documentElement.scrollHeight));
 
+    // Match the iframe viewport to the real content height so position:fixed
+    // elements (positioned against view.innerHeight in the converter) land
+    // correctly on tall pages, instead of against the initial 4096px viewport.
+    iframe.style.height = `${height}px`;
+
     const converter = createFigmaConverter();
     const result = await converter.convert({
       element: body,
