@@ -21,6 +21,32 @@ export type ImageFile = {
 export type ImageLoader = (request: ImageRequest) => Promise<ImageFile>;
 
 /**
+ * Read image bytes for a src. A `data:<mime>;base64,<payload>` URI is decoded
+ * directly (no network, no CORS); any other src is fetched. Returns the bytes
+ * and the content type.
+ */
+export async function decodeImageBytes(src: string): Promise<ImageFile> {
+  const dataMatch = /^data:([^;,]+)(;base64)?,(.*)$/s.exec(src);
+  if (dataMatch) {
+    const mimeType = dataMatch[1] || "application/octet-stream";
+    const isBase64 = dataMatch[2] === ";base64";
+    const payload = dataMatch[3] ?? "";
+    const binary = isBase64 ? atob(payload) : decodeURIComponent(payload);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i += 1) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return { bytes: bytes.buffer, mimeType };
+  }
+  const response = await fetch(src);
+  if (!response.ok) {
+    throw new Error(`Image fetch failed (${response.status}): ${src}`);
+  }
+  const blob = await response.blob();
+  return { bytes: await blob.arrayBuffer(), mimeType: blob.type };
+}
+
+/**
  * Result of processing an `ImageFile` for Figma blob registration.
  */
 export type ImageBlobInfo = {
@@ -46,17 +72,7 @@ const PNG_QUALITY = 1.0;
  * chain should inject their own `ImageLoader`.
  */
 export function createDirectImageLoader(): ImageLoader {
-  return async ({ src }) => {
-    const response = await fetch(src);
-    if (!response.ok) {
-      throw new Error(`Image fetch failed (${response.status}): ${src}`);
-    }
-    const blob = await response.blob();
-    return {
-      bytes: await blob.arrayBuffer(),
-      mimeType: blob.type,
-    };
-  };
+  return ({ src }) => decodeImageBytes(src);
 }
 
 /**
@@ -85,41 +101,21 @@ function isFigmaSupportedFormat(mimeType: string): boolean {
 
 async function convertToPng(file: ImageFile): Promise<ArrayBuffer> {
   const sourceBlob = new Blob([file.bytes], { type: file.mimeType });
-  const objectUrl = URL.createObjectURL(sourceBlob);
+  const bitmap = await createImageBitmap(sourceBlob);
   try {
-    const img = await loadImageElement(objectUrl);
-    const canvas = createCanvasFromImage(img);
-    if (!canvas) {
+    const canvas = document.createElement("canvas");
+    canvas.width = bitmap.width;
+    canvas.height = bitmap.height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
       throw new Error("Failed to create canvas for PNG conversion");
     }
+    ctx.drawImage(bitmap, 0, 0);
     const pngBlob = await canvasToBlob(canvas, "image/png", PNG_QUALITY);
     return await pngBlob.arrayBuffer();
   } finally {
-    URL.revokeObjectURL(objectUrl);
+    bitmap.close();
   }
-}
-
-function loadImageElement(src: string): Promise<HTMLImageElement> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () => reject(new Error(`Failed to load image: ${src}`));
-    img.src = src;
-  });
-}
-
-function createCanvasFromImage(
-  img: HTMLImageElement
-): HTMLCanvasElement | null {
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
-  if (!ctx) {
-    return null;
-  }
-  canvas.width = img.naturalWidth;
-  canvas.height = img.naturalHeight;
-  ctx.drawImage(img, 0, 0);
-  return canvas;
 }
 
 function canvasToBlob(
