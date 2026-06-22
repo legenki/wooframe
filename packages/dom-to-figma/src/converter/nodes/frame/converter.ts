@@ -1,4 +1,5 @@
 import type { Position } from "../../dom";
+import type { ImageCache } from "../../image-cache";
 import { getNodeNameFromElement } from "../../naming";
 import {
   cssBackdropFilterToFigmaEffects,
@@ -6,10 +7,14 @@ import {
 } from "../../styles/blur";
 import { parseBorderFromComputedStyle } from "../../styles/border";
 import { createSolidPaint, cssColorToFigmaColor } from "../../styles/color";
-import { cssBackgroundToFigmaPaints } from "../../styles/gradient";
+import {
+  cssBackgroundImageToFigmaPaints,
+  cssBackgroundToFigmaPaints,
+} from "../../styles/gradient";
 import { parseOpacity } from "../../styles/opacity";
 import { cssBoxShadowToFigmaEffects } from "../../styles/shadow";
 import type {
+  FigmaBlob,
   FigmaFrameNodeChange,
   FigmaGuid,
   FigmaNodeChange,
@@ -100,6 +105,8 @@ type Params = {
   parentGuid: FigmaGuid;
   childIndex: number;
   position: Position;
+  imageCache?: ImageCache;
+  registerBlob?: (blob: FigmaBlob) => number;
 };
 
 type FrameResult = {
@@ -107,11 +114,12 @@ type FrameResult = {
   textGradient?: Array<FigmaPaint>;
 };
 
-export function elementToFrameNodeChange(
+export async function elementToFrameNodeChange(
   element: Element,
   options: Params
-): FrameResult {
-  const { guid, parentGuid, childIndex, position } = options;
+): Promise<FrameResult> {
+  const { guid, parentGuid, childIndex, position, imageCache, registerBlob } =
+    options;
 
   const rect = element.getBoundingClientRect();
   const computedStyle = window.getComputedStyle(element);
@@ -174,11 +182,19 @@ export function elementToFrameNodeChange(
   // Add background-image on top (top layer)
   if (backgroundImage && backgroundImage !== "none") {
     const gradientPaints = cssBackgroundToFigmaPaints(backgroundImage);
+    const imagePaints =
+      imageCache && registerBlob
+        ? await cssBackgroundImageToFigmaPaints(
+            backgroundImage,
+            imageCache,
+            registerBlob
+          )
+        : [];
 
     if (isTextClipped) {
-      textGradient = gradientPaints;
+      textGradient = [...gradientPaints, ...imagePaints];
     } else {
-      fillPaints.push(...gradientPaints);
+      fillPaints.push(...gradientPaints, ...imagePaints);
     }
   }
 

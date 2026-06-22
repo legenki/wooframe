@@ -1,4 +1,10 @@
-import type { FigmaColor, FigmaPaint, FigmaTransform } from "../types";
+import type { ImageCache } from "../image-cache";
+import type {
+  FigmaBlob,
+  FigmaColor,
+  FigmaPaint,
+  FigmaTransform,
+} from "../types";
 import { cssColorToFigmaColor } from "./color";
 
 type GradientStop = {
@@ -221,7 +227,7 @@ function parseLinearGradient(cssGradient: string): FigmaPaint | null {
 }
 
 /**
- * Converts a CSS background string to an array of FigmaPaint objects.
+ * Converts a CSS background string to an array of FigmaPaint objects (gradients only).
  * @param cssBackground - The string to convert.
  * @returns An array of FigmaPaint objects.
  */
@@ -232,12 +238,74 @@ export function cssBackgroundToFigmaPaints(
     return [];
   }
 
+  const paints: Array<FigmaPaint> = [];
+
+  // Parse linear gradients
   if (cssBackground.includes("linear-gradient")) {
     const gradientPaint = parseLinearGradient(cssBackground);
     if (gradientPaint) {
-      return [gradientPaint];
+      paints.push(gradientPaint);
     }
   }
 
-  return [];
+  return paints;
+}
+
+const BACKGROUND_URL_PATTERN = /url\(['"]?([^'")]+)['"]?\)/g;
+
+/**
+ * Converts the `url(...)` layers of a CSS `background-image` into IMAGE paints.
+ * A `background-image` can stack multiple comma-separated layers, so every
+ * `url(...)` is emitted as its own paint (gradient layers are handled by
+ * `cssBackgroundToFigmaPaints`). Returns an empty array when there are no urls.
+ */
+export async function cssBackgroundImageToFigmaPaints(
+  cssBackground: string,
+  imageCache: ImageCache,
+  registerBlob: (blob: FigmaBlob) => number
+): Promise<Array<FigmaPaint>> {
+  if (!cssBackground || cssBackground === "none") {
+    return [];
+  }
+
+  const paints: Array<FigmaPaint> = [];
+
+  for (const match of cssBackground.matchAll(BACKGROUND_URL_PATTERN)) {
+    const url = match[1];
+    if (!url) {
+      continue;
+    }
+    try {
+      // `imageCache` keys on `element.src`; a bare `Image` is just the carrier
+      // for the url (no load needed — the loader reads the src directly).
+      const img = new Image();
+      img.src = url;
+      const { hash, bytes } = await imageCache.get(img);
+      const blobIndex = registerBlob({ bytes: Array.from(bytes) });
+
+      paints.push({
+        type: "IMAGE",
+        opacity: 1.0,
+        visible: true,
+        blendMode: "NORMAL",
+        transform: {
+          m00: 1.0,
+          m01: 0.0,
+          m02: 0.0,
+          m10: 0.0,
+          m11: 1.0,
+          m12: 0.0,
+        },
+        image: {
+          hash,
+          dataBlob: blobIndex,
+        },
+        imageScaleMode: "FILL",
+      });
+    } catch (error) {
+      console.warn("Failed to load background image:", url, error);
+    }
+  }
+
+  return paints;
 }

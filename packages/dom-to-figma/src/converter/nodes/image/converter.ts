@@ -1,12 +1,18 @@
 import type { Position } from "../../dom";
 import type { ImageCache } from "../../image-cache";
 import { parseBorderFromComputedStyle } from "../../styles/border";
+import { createSolidPaint, cssColorToFigmaColor } from "../../styles/color";
+import {
+  cssBackgroundImageToFigmaPaints,
+  cssBackgroundToFigmaPaints,
+} from "../../styles/gradient";
 import { parseOpacity } from "../../styles/opacity";
 import { cssBoxShadowToFigmaEffects } from "../../styles/shadow";
 import type {
   FigmaBlob,
   FigmaGuid,
   FigmaNodeChange,
+  FigmaPaint,
   FigmaRoundedRectangleNodeChange,
 } from "../../types";
 
@@ -42,8 +48,47 @@ export async function elementToImageNodeChange(
     height,
   });
 
+  const fillPaints: Array<FigmaPaint> = [];
+
+  const backgroundColor = cssColorToFigmaColor(computedStyle.backgroundColor);
+  if (backgroundColor) {
+    fillPaints.push(
+      createSolidPaint(backgroundColor.color, backgroundColor.opacity)
+    );
+  }
+
+  const backgroundImage = computedStyle.backgroundImage;
+  if (backgroundImage && backgroundImage !== "none") {
+    const gradientPaints = cssBackgroundToFigmaPaints(backgroundImage);
+    const bgImagePaints = await cssBackgroundImageToFigmaPaints(
+      backgroundImage,
+      imageCache,
+      registerBlob
+    );
+    fillPaints.push(...gradientPaints, ...bgImagePaints);
+  }
+
   const { hash, bytes } = await imageCache.get(element);
-  const blobIndex = registerBlob({ bytes });
+  const blobIndex = registerBlob({ bytes: Array.from(bytes) });
+  fillPaints.push({
+    type: "IMAGE",
+    opacity: 1.0,
+    visible: true,
+    blendMode: "NORMAL",
+    transform: {
+      m00: 1.0,
+      m01: 0.0,
+      m02: 0.0,
+      m10: 0.0,
+      m11: 1.0,
+      m12: 0.0,
+    },
+    image: {
+      hash,
+      dataBlob: blobIndex,
+    },
+    imageScaleMode: "FILL",
+  });
 
   const nodeChange: FigmaNodeChange = {
     /* General Info */
@@ -78,39 +123,7 @@ export async function elementToImageNodeChange(
     ...borderProperties,
 
     /* Fill */
-    fillPaints: [
-      {
-        type: "IMAGE",
-        opacity: 1.0,
-        visible: true,
-        blendMode: "NORMAL",
-        transform: {
-          m00: 1.0,
-          m01: 0.0,
-          m02: 0.0,
-          m10: 0.0,
-          m11: 1.0,
-          m12: 0.0,
-        },
-        image: {
-          hash,
-          dataBlob: blobIndex,
-        },
-        // imageThumbnail: {
-        //   hash: [],
-        //   name: "image",
-        // },
-        imageScaleMode: "FILL",
-        // animationFrame: 0,
-        // imageShouldColorManage: true,
-        // rotation: 0.0,
-        // scale: 0.5,
-        // originalImageWidth: 3000,
-        // originalImageHeight: 2003,
-        // thumbHash: [],
-        // altText: "",
-      },
-    ],
+    fillPaints,
 
     /* Effects */
     effects,

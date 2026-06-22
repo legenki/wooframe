@@ -76,11 +76,13 @@ export async function convertElement(
       };
 
     case "frame": {
-      const frameResult = elementToFrameNodeChange(element, {
+      const frameResult = await elementToFrameNodeChange(element, {
         guid,
         parentGuid,
         childIndex,
         position,
+        imageCache,
+        registerBlob,
       });
       return {
         changes: [frameResult.nodeChange],

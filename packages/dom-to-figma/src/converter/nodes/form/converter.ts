@@ -182,7 +182,7 @@ export async function elementToFormNodeChange(
   const nodeChanges: Array<FigmaNodeChange> = [];
 
   // Create the frame for the form element (border, background, etc.)
-  const frameResult = elementToFrameNodeChange(element, {
+  const frameResult = await elementToFrameNodeChange(element, {
     guid,
     parentGuid,
     childIndex,
