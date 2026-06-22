@@ -56,7 +56,8 @@ radius; borders; auto-layout; fonts via `loadFontAsync` with an Inter fallback.
 Images build via `figma.createImage` (PNG; a failed image keeps its frame and
 records a warning). Icon/symbol characters the primary font lacks (e.g. ⌕ ▾ ⋯)
 are drawn from a fallback chain (Noto Sans Math → Noto Sans Symbols) instead of
-being dropped. Not yet handled: deriving gradient direction from the CSS angle.
+being dropped. Linear gradients use the direction derived from the CSS angle
+(radial/conic gradients aren't emitted by the converter).
 
 ## Known limitations (from live Figma testing)
 
