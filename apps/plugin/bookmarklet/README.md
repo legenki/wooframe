@@ -22,8 +22,13 @@ authenticated dashboards and JS-rendered SPAs.
 
 ## What it captures
 
-The live DOM with the CSS properties the converter reads inlined onto each
-element, with `<script>`/`<noscript>` removed.
+The live DOM with computed styles inlined onto each element, with
+`<script>`/`<noscript>` removed.
+
+Snapshots now inline nearly all computed styles (minus a small blacklist), which
+guarantees an identical layout when the converter re-renders them — but makes the
+HTML much larger (roughly 5–10× the previous size; several MB on heavy pages).
+That's expected for a one-shot capture.
 
 **Not captured:** Shadow DOM, `<canvas>`/WebGL, `<video>`, cross-origin
 `<iframe>`, and `::before`/`::after` pseudo-elements (the converter doesn't

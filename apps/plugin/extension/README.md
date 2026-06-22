@@ -33,8 +33,13 @@ The **Woofigma Snapshot** icon appears in the toolbar.
 ## What it captures / limits
 
 Identical to the bookmarklet (see `../bookmarklet/README.md`): the live DOM with
-the converter's CSS properties inlined, scripts stripped. Not captured: Shadow
-DOM, `<canvas>`/WebGL, `<video>`, cross-origin `<iframe>`, pseudo-elements.
+computed styles inlined, scripts stripped. Not captured: Shadow DOM,
+`<canvas>`/WebGL, `<video>`, cross-origin `<iframe>`, pseudo-elements.
+
+Snapshots now inline nearly all computed styles (minus a small blacklist), which
+guarantees an identical layout when the converter re-renders them — but makes the
+HTML much larger (roughly 5–10× the previous size; several MB on heavy pages).
+That's expected for a one-shot capture.
 
 The extension uses only the `activeTab` and `scripting` permissions — it can read
 the current tab only when you click the icon, and never runs in the background.
