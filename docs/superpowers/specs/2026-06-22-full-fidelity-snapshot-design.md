@@ -36,8 +36,15 @@ of properties that break re-rendering or are pure noise.
   (`content-visibility: auto` collapses offscreen content).
 - `inline-size`, `block-size` — logical duplicates of `width`/`height` that can
   double-constrain the box.
-- `animation`, `animation-*`, `transition`, `transition-*` — may re-trigger
-  animations / cause reflow on re-render.
+- The animation/transition family. `getComputedStyle` enumerates **longhands**,
+  not the shorthand, so the blacklist must list each: `animation`,
+  `animation-name`, `animation-duration`, `animation-delay`,
+  `animation-direction`, `animation-fill-mode`, `animation-iteration-count`,
+  `animation-play-state`, `animation-timeline`, `animation-timing-function`,
+  `transition`, `transition-property`, `transition-duration`,
+  `transition-delay`, `transition-timing-function`. (Blacklisting only the
+  `animation`/`transition` shorthand would miss the longhands the loop actually
+  sees.) These may re-trigger animations / cause reflow on re-render.
 
 Everything else is inlined, including vendor `-webkit-*` properties (some carry
 real visuals, e.g. `-webkit-background-clip`).
@@ -67,6 +74,13 @@ for (let i = 0; i < computed.length; i += 1) {
 `SNAPSHOT_STYLE_PROPS` (the whitelist) is **removed**; `SNAPSHOT_SKIP_PROPS`
 (a `Set`) replaces it. `buildSnapshotHtml`, `runSnapshot`, and the extension entry
 keep their signatures.
+
+**Keep the lockstep `(original, clone, getStyle)` signature.** `inlineStyles`
+reads computed style from `original` but writes via `clone.setAttribute`, then
+recurses over `original.children`/`clone.children` together. Do **not** collapse
+it to `(original, getStyle)` writing onto `original` — that would mutate the
+user's live page. Only the inner loop changes; the function shape and the
+clone-target are unchanged.
 
 ## Guard test — reframed
 
@@ -120,8 +134,11 @@ already such a declaration — no change there.
   (`node apps/plugin/bookmarklet/build.mjs`).
 - `apps/plugin/extension/content.js` — regenerate
   (`node apps/plugin/extension/build-extension.mjs`).
-- `apps/plugin/bookmarklet/README.md` + `apps/plugin/extension/README.md` — note
-  that all styles (minus a small blacklist) are inlined and snapshots are large.
+- `apps/plugin/bookmarklet/README.md` + `apps/plugin/extension/README.md` — add a
+  note: "Snapshots now inline nearly all computed styles (minus a small
+  blacklist), which guarantees an identical layout when the converter re-renders
+  them — but makes the HTML much larger (roughly 5–10× the previous size; several
+  MB on heavy pages). That's expected for a one-shot capture."
 
 Plugin UI, converter, manifest, background worker: **unchanged**.
 
@@ -129,15 +146,22 @@ Plugin UI, converter, manifest, background worker: **unchanged**.
 
 `snapshot.test.ts` (happy-dom + DI iterable stub):
 
-1. A non-blacklisted property (`width: 100px`, `gap: 20px`) is inlined onto the
-   element's `style`.
-2. A blacklisted property (`content`, `cursor`) is **not** inlined.
+1. Layout-critical properties are inlined onto the element's `style` — assert
+   each of `width`, `flex-direction`, `gap`, `justify-content`,
+   `grid-template-columns`, `transform` appears (these are exactly what the old
+   whitelist dropped).
+2. A blacklisted property (`content`, `cursor`, `animation-name`,
+   `transition-duration`) is **not** inlined.
 3. `<script>`/`<noscript>` stripped; doctype present; shadow host doesn't throw
    (existing cases, updated stub).
 
-`snapshot-whitelist.test.ts`:
+`snapshot-whitelist.test.ts` (keep the filename; add a top-of-file comment noting
+it now guards the blacklist, not a whitelist):
 
 4. Converter-read props ∩ `SNAPSHOT_SKIP_PROPS` is empty.
+5. Sanity: layout-critical props are **not** in the blacklist —
+   `SNAPSHOT_SKIP_PROPS.has("display")`, `.has("width")`,
+   `.has("flex-direction")` are all `false`.
 
 ## Out of scope
 
