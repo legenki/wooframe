@@ -101,3 +101,43 @@ export function buildSnapshotHtml(
   }
   return `<!doctype html>\n${clone.outerHTML}`;
 }
+
+// Bookmarklet entry: build the snapshot from the current page, download it, copy
+// to clipboard (best-effort), and toast the user. Not unit-tested (browser-only
+// side effects); the testable logic lives in buildSnapshotHtml above.
+export function runSnapshot() {
+  const toast = (msg) => {
+    let el = document.getElementById("__woofigma_toast");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "__woofigma_toast";
+      el.style.cssText =
+        "position:fixed;bottom:16px;right:16px;z-index:2147483647;background:#0d99ff;color:#fff;font:13px/1.4 sans-serif;padding:8px 14px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.2)";
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+  };
+
+  const count = document.documentElement.querySelectorAll("*").length;
+  toast(`Processing ${count} elements…`);
+
+  const html = buildSnapshotHtml(document.documentElement);
+
+  const blob = new Blob([html], { type: "text/html" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "woofigma-snapshot.html";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(html).catch(() => {
+      // clipboard blocked (no permission/gesture) — the download already fired.
+    });
+  }
+
+  toast("Snapshot saved — drop the .html into Woofigma (or paste).");
+}
