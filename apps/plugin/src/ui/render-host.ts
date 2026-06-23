@@ -96,18 +96,34 @@ const customImageLoader = async (request: ImageRequest): Promise<ImageFile> => {
   return defaultImageLoader(request);
 };
 
+function extractBaseUrlFromSingleFile(html: string): string | null {
+  const match = html.match(/url:\s*(https?:\/\/[^\s]+)/i);
+  return match ? match[1] : null;
+}
+
 export async function renderAndConvert(
   html: string,
   rootName: string,
   width: number = DEFAULT_RENDER_WIDTH
 ): Promise<RenderResult> {
+  let finalHtml = html;
+  const baseUrl = extractBaseUrlFromSingleFile(html);
+  if (baseUrl && !html.includes("<base ")) {
+    const baseTag = `<base href="${baseUrl}">`;
+    if (finalHtml.includes("<head>")) {
+      finalHtml = finalHtml.replace("<head>", `<head>\n  ${baseTag}`);
+    } else {
+      finalHtml = `${baseTag}\n${finalHtml}`;
+    }
+  }
+
   const iframe = document.createElement("iframe");
   iframe.sandbox.add("allow-scripts", "allow-same-origin");
   iframe.style.cssText = `position:fixed;left:-99999px;top:0;width:${width}px;height:${RENDER_HEIGHT}px;border:0;visibility:hidden`;
   document.body.appendChild(iframe);
 
   try {
-    await writeAndWait(iframe, html);
+    await writeAndWait(iframe, finalHtml);
     const doc = iframe.contentDocument;
     if (!doc) {
       throw new Error("Could not access rendered document");
