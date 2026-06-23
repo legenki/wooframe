@@ -34,17 +34,42 @@ export function assembleParagraph(block: Element): AssembledParagraph {
     if (isTextNode(node)) {
       const raw = node.textContent ?? "";
       const spanStart = characters.length;
+
+      const computedStyle = window.getComputedStyle(styleElement);
+      const whiteSpace = computedStyle.whiteSpace;
+      const preservesNewlines =
+        whiteSpace === "pre" ||
+        whiteSpace === "pre-wrap" ||
+        whiteSpace === "pre-line" ||
+        whiteSpace === "break-spaces";
+      const collapsesSpaces =
+        whiteSpace === "normal" ||
+        whiteSpace === "nowrap" ||
+        whiteSpace === "pre-line";
+
       for (const ch of raw) {
-        if (WHITESPACE.test(ch)) {
-          pendingSpace = characters.length > 0;
+        if (ch === "\n" && preservesNewlines) {
+          characters += "\n";
+          pendingSpace = false;
           continue;
         }
+
+        if (WHITESPACE.test(ch)) {
+          if (collapsesSpaces) {
+            pendingSpace = characters.length > 0 && characters.at(-1) !== "\n";
+          } else {
+            characters += ch;
+          }
+          continue;
+        }
+
         if (pendingSpace) {
           characters += " ";
           pendingSpace = false;
         }
         characters += ch;
       }
+
       const spanEnd = characters.length;
       if (spanEnd > spanStart) {
         spans.push({ start: spanStart, end: spanEnd, element: styleElement });

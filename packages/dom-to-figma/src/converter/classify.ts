@@ -209,12 +209,8 @@ export function isInlineParagraph(element: Element): boolean {
   if (!hasNoPaintedBox(computedStyle)) {
     return false;
   }
-  // The assembler collapses whitespace; a block that preserves it (pre /
-  // pre-wrap / pre-line / break-spaces) would have its text corrupted.
-  const whiteSpace = computedStyle.whiteSpace;
-  if (whiteSpace !== "normal" && whiteSpace !== "nowrap") {
-    return false;
-  }
+  // The assembler now respects CSS white-space collapsing rules natively,
+  // so we no longer need to exclude pre-wrap / pre-line / break-spaces.
 
   for (const child of childElements) {
     if (NON_MERGEABLE_INLINE_TAGS.has(child.tagName.toLowerCase())) {

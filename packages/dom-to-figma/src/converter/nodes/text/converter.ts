@@ -174,6 +174,11 @@ export async function nodeToTextNodeChange(
 
   const fillPaints: Array<FigmaPaint> = [];
 
+  const isTextClipped =
+    computedStyle.backgroundClip === "text" ||
+    // biome-ignore lint/suspicious/noExplicitAny: webkit property is not in CSSStyleDeclaration
+    (computedStyle as any).webkitBackgroundClip === "text";
+
   // Prioritize inherited text gradient from parent with background-clip: text
   if (
     inheritedProperties?.textGradient &&
@@ -181,8 +186,13 @@ export async function nodeToTextNodeChange(
   ) {
     fillPaints.push(...inheritedProperties.textGradient);
   }
-  // Check for gradients first. Only apply gradient if the color is transparent (that's how text gradient works in CSS)
-  else if (backgroundImage && backgroundImage !== "none" && color === null) {
+  // Check for gradients first. Only apply gradient if text is clipped and color is transparent
+  else if (
+    backgroundImage &&
+    backgroundImage !== "none" &&
+    isTextClipped &&
+    color === null
+  ) {
     // Text fills only support gradients (background-clip: text); image fills
     // aren't meaningful on a text node, so use the gradients-only path.
     const gradientPaints =

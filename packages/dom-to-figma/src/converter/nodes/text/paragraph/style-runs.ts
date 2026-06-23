@@ -27,7 +27,13 @@ type StyleDescriptor = {
 function fillsFor(style: CSSStyleDeclaration): Array<FigmaPaint> {
   const color = cssColorToFigmaColor(style.color);
   const background = style.backgroundImage || style.background;
-  if (background && background !== "none" && color === null) {
+
+  const isTextClipped =
+    style.backgroundClip === "text" ||
+    // biome-ignore lint/suspicious/noExplicitAny: webkit property is not in CSSStyleDeclaration
+    (style as any).webkitBackgroundClip === "text";
+
+  if (background && background !== "none" && isTextClipped && color === null) {
     return cssBackgroundsGradientsToFigmaPaintsSync(background);
   }
   if (color) {
