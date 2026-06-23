@@ -1,5 +1,5 @@
 import { createSolidPaint, cssColorToFigmaColor } from "../../../styles/color";
-import { cssBackgroundToFigmaPaints } from "../../../styles/gradient";
+import { cssBackgroundsGradientsToFigmaPaintsSync } from "../../../styles/gradient";
 import type { FigmaPaint } from "../../../types";
 import type { FigmaStyleOverride } from "../../../types/text";
 import { buildFontStyleName } from "../primitives/font/loader";
@@ -28,7 +28,7 @@ function fillsFor(style: CSSStyleDeclaration): Array<FigmaPaint> {
   const color = cssColorToFigmaColor(style.color);
   const background = style.backgroundImage || style.background;
   if (background && background !== "none" && color === null) {
-    return cssBackgroundToFigmaPaints(background);
+    return cssBackgroundsGradientsToFigmaPaintsSync(background);
   }
   if (color) {
     return [createSolidPaint(color.color, color.opacity)];

@@ -7,10 +7,7 @@ import {
 } from "../../styles/blur";
 import { parseBorderFromComputedStyle } from "../../styles/border";
 import { createSolidPaint, cssColorToFigmaColor } from "../../styles/color";
-import {
-  cssBackgroundImageToFigmaPaints,
-  cssBackgroundToFigmaPaints,
-} from "../../styles/gradient";
+import { cssBackgroundsToFigmaPaints } from "../../styles/gradient";
 import { parseOpacity } from "../../styles/opacity";
 import { cssBoxShadowToFigmaEffects } from "../../styles/shadow";
 import type {
@@ -181,20 +178,16 @@ export async function elementToFrameNodeChange(
 
   // Add background-image on top (top layer)
   if (backgroundImage && backgroundImage !== "none") {
-    const gradientPaints = cssBackgroundToFigmaPaints(backgroundImage);
-    const imagePaints =
-      imageCache && registerBlob
-        ? await cssBackgroundImageToFigmaPaints(
-            backgroundImage,
-            imageCache,
-            registerBlob
-          )
-        : [];
+    const combinedPaints = await cssBackgroundsToFigmaPaints(
+      backgroundImage,
+      imageCache ?? null,
+      registerBlob ?? null
+    );
 
     if (isTextClipped) {
-      textGradient = [...gradientPaints, ...imagePaints];
+      textGradient = combinedPaints;
     } else {
-      fillPaints.push(...gradientPaints, ...imagePaints);
+      fillPaints.push(...combinedPaints);
     }
   }
 

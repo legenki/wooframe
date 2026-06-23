@@ -2,7 +2,7 @@ import type { Position, Size } from "../../dom";
 import { getElementSize, getTextSize, isTextNode } from "../../dom";
 import type { FontCache } from "../../font-cache";
 import { createSolidPaint, cssColorToFigmaColor } from "../../styles/color";
-import { cssBackgroundToFigmaPaints } from "../../styles/gradient";
+import { cssBackgroundsGradientsToFigmaPaintsSync } from "../../styles/gradient";
 import { parseOpacity } from "../../styles/opacity";
 import type {
   FigmaBlob,
@@ -183,7 +183,10 @@ export async function nodeToTextNodeChange(
   }
   // Check for gradients first. Only apply gradient if the color is transparent (that's how text gradient works in CSS)
   else if (backgroundImage && backgroundImage !== "none" && color === null) {
-    const gradientPaints = cssBackgroundToFigmaPaints(backgroundImage);
+    // Text fills only support gradients (background-clip: text); image fills
+    // aren't meaningful on a text node, so use the gradients-only path.
+    const gradientPaints =
+      cssBackgroundsGradientsToFigmaPaintsSync(backgroundImage);
     fillPaints.push(...gradientPaints);
   }
   // Add solid color if present and no gradients found

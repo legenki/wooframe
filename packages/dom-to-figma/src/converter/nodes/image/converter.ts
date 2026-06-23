@@ -2,10 +2,7 @@ import type { Position } from "../../dom";
 import type { ImageCache } from "../../image-cache";
 import { parseBorderFromComputedStyle } from "../../styles/border";
 import { createSolidPaint, cssColorToFigmaColor } from "../../styles/color";
-import {
-  cssBackgroundImageToFigmaPaints,
-  cssBackgroundToFigmaPaints,
-} from "../../styles/gradient";
+import { cssBackgroundsToFigmaPaints } from "../../styles/gradient";
 import { parseOpacity } from "../../styles/opacity";
 import { cssBoxShadowToFigmaEffects } from "../../styles/shadow";
 import type {
@@ -59,13 +56,12 @@ export async function elementToImageNodeChange(
 
   const backgroundImage = computedStyle.backgroundImage;
   if (backgroundImage && backgroundImage !== "none") {
-    const gradientPaints = cssBackgroundToFigmaPaints(backgroundImage);
-    const bgImagePaints = await cssBackgroundImageToFigmaPaints(
+    const combinedPaints = await cssBackgroundsToFigmaPaints(
       backgroundImage,
       imageCache,
       registerBlob
     );
-    fillPaints.push(...gradientPaints, ...bgImagePaints);
+    fillPaints.push(...combinedPaints);
   }
 
   const { hash, bytes } = await imageCache.get(element);

@@ -226,12 +226,33 @@ function parseLinearGradient(cssGradient: string): FigmaPaint | null {
   };
 }
 
+function splitBackgrounds(css: string): Array<string> {
+  const parts: Array<string> = [];
+  let current = "";
+  let depth = 0;
+  for (const char of css) {
+    if (char === "(") {
+      depth += 1;
+    } else if (char === ")") {
+      depth -= 1;
+    } else if (char === "," && depth === 0) {
+      parts.push(current.trim());
+      current = "";
+      continue;
+    }
+    current += char;
+  }
+  if (current.trim()) {
+    parts.push(current.trim());
+  }
+  return parts;
+}
+
 /**
- * Converts a CSS background string to an array of FigmaPaint objects (gradients only).
- * @param cssBackground - The string to convert.
- * @returns An array of FigmaPaint objects.
+ * Synchronous version for extracting gradients only from a CSS background string.
+ * Used in contexts where async parsing of images is not possible or desired.
  */
-export function cssBackgroundToFigmaPaints(
+export function cssBackgroundsGradientsToFigmaPaintsSync(
   cssBackground: string
 ): Array<FigmaPaint> {
   if (!cssBackground || cssBackground === "none") {
@@ -239,73 +260,88 @@ export function cssBackgroundToFigmaPaints(
   }
 
   const paints: Array<FigmaPaint> = [];
+  const layers = splitBackgrounds(cssBackground);
 
-  // Parse linear gradients
-  if (cssBackground.includes("linear-gradient")) {
-    const gradientPaint = parseLinearGradient(cssBackground);
-    if (gradientPaint) {
-      paints.push(gradientPaint);
+  for (const layer of layers) {
+    if (layer.startsWith("linear-gradient")) {
+      const gradientPaint = parseLinearGradient(layer);
+      if (gradientPaint) {
+        paints.push(gradientPaint);
+      }
     }
   }
 
-  return paints;
+  return paints.reverse();
 }
 
-const BACKGROUND_URL_PATTERN = /url\(['"]?([^'")]+)['"]?\)/g;
+const BACKGROUND_URL_PATTERN = /^url\(['"]?([^'")]+)['"]?\)$/;
 
 /**
- * Converts the `url(...)` layers of a CSS `background-image` into IMAGE paints.
- * A `background-image` can stack multiple comma-separated layers, so every
- * `url(...)` is emitted as its own paint (gradient layers are handled by
- * `cssBackgroundToFigmaPaints`). Returns an empty array when there are no urls.
+ * Converts a CSS background string (e.g. `linear-gradient(...), url(...)`) to an array of FigmaPaint objects.
+ * Backgrounds in CSS stack from first to last (first is top).
+ * Figma paints stack from first to last (last is top).
+ * We parse them and reverse the final array to match Figma's stacking order.
  */
-export async function cssBackgroundImageToFigmaPaints(
+export async function cssBackgroundsToFigmaPaints(
   cssBackground: string,
-  imageCache: ImageCache,
-  registerBlob: (blob: FigmaBlob) => number
+  imageCache: ImageCache | null,
+  registerBlob: ((blob: FigmaBlob) => number) | null
 ): Promise<Array<FigmaPaint>> {
   if (!cssBackground || cssBackground === "none") {
     return [];
   }
 
   const paints: Array<FigmaPaint> = [];
+  const layers = splitBackgrounds(cssBackground);
 
-  for (const match of cssBackground.matchAll(BACKGROUND_URL_PATTERN)) {
-    const url = match[1];
-    if (!url) {
-      continue;
-    }
-    try {
-      // `imageCache` keys on `element.src`; a bare `Image` is just the carrier
-      // for the url (no load needed — the loader reads the src directly).
-      const img = new Image();
-      img.src = url;
-      const { hash, bytes } = await imageCache.get(img);
-      const blobIndex = registerBlob({ bytes: Array.from(bytes) });
+  for (const layer of layers) {
+    if (layer.startsWith("linear-gradient")) {
+      const gradientPaint = parseLinearGradient(layer);
+      if (gradientPaint) {
+        paints.push(gradientPaint);
+      }
+    } else if (layer.startsWith("url")) {
+      if (!(imageCache && registerBlob)) {
+        continue;
+      }
 
-      paints.push({
-        type: "IMAGE",
-        opacity: 1.0,
-        visible: true,
-        blendMode: "NORMAL",
-        transform: {
-          m00: 1.0,
-          m01: 0.0,
-          m02: 0.0,
-          m10: 0.0,
-          m11: 1.0,
-          m12: 0.0,
-        },
-        image: {
-          hash,
-          dataBlob: blobIndex,
-        },
-        imageScaleMode: "FILL",
-      });
-    } catch (error) {
-      console.warn("Failed to load background image:", url, error);
+      const match = BACKGROUND_URL_PATTERN.exec(layer);
+      const url = match?.[1];
+      if (!url) {
+        continue;
+      }
+
+      try {
+        const img = new Image();
+        img.src = url;
+        const { hash, bytes } = await imageCache.get(img);
+        const blobIndex = registerBlob({ bytes: Array.from(bytes) });
+
+        paints.push({
+          type: "IMAGE",
+          opacity: 1.0,
+          visible: true,
+          blendMode: "NORMAL",
+          transform: {
+            m00: 1.0,
+            m01: 0.0,
+            m02: 0.0,
+            m10: 0.0,
+            m11: 1.0,
+            m12: 0.0,
+          },
+          image: {
+            hash,
+            dataBlob: blobIndex,
+          },
+          imageScaleMode: "FILL",
+        });
+      } catch (error) {
+        console.warn("Failed to load background image:", url, error);
+      }
     }
   }
 
-  return paints;
+  // CSS: first is top. Figma: last is top. Reverse to match Figma.
+  return paints.reverse();
 }
