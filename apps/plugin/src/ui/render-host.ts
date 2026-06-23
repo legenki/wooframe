@@ -7,9 +7,11 @@ import { computeLoadTimeout } from "./render-timeout";
 // need more. Future work: replace with a MutationObserver + requestIdleCallback
 // settle detector.
 const STABILIZE_MS = 400;
-// Generous viewport so wide/tall pages aren't clipped before measurement.
 // Default render width (Macbook preset). Callers override per screen-size choice.
 const DEFAULT_RENDER_WIDTH = 1440;
+// Fixed render viewport height. Kept constant (NOT resized to the measured
+// content height) so that vh-based styles — e.g. a hero with `height: 100vh` —
+// resolve to a normal viewport instead of ballooning to the full page height.
 const RENDER_HEIGHT = 1080;
 
 export type RenderResult = {
@@ -37,11 +39,6 @@ export async function renderAndConvert(
     const body = doc.body;
     const width = Math.max(1, Math.round(doc.documentElement.scrollWidth));
     const height = Math.max(1, Math.round(doc.documentElement.scrollHeight));
-
-    // Match the iframe viewport to the real content height so position:fixed
-    // elements (positioned against view.innerHeight in the converter) land
-    // correctly on tall pages, instead of against the initial RENDER_HEIGHT.
-    iframe.style.height = `${height}px`;
 
     const converter = createFigmaConverter();
     const result = await converter.convert({
