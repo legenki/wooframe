@@ -112,11 +112,37 @@ function isPlainTextElement(element: Element): boolean {
  * losing visible decoration.
  */
 function hasNoPaintedBox(computedStyle: CSSStyleDeclaration): boolean {
-  return (
-    TRANSPARENT_COLOR_VALUES.includes(computedStyle.backgroundColor) &&
-    computedStyle.padding === "0px" &&
-    computedStyle.borderWidth === "0px"
-  );
+  const isTextClipped =
+    computedStyle.backgroundClip === "text" ||
+    // biome-ignore lint/suspicious/noExplicitAny: webkit property is not in CSSStyleDeclaration
+    (computedStyle as any).webkitBackgroundClip === "text";
+
+  const hasNoBackground =
+    (TRANSPARENT_COLOR_VALUES.includes(computedStyle.backgroundColor) ||
+      isTextClipped) &&
+    (!computedStyle.backgroundImage ||
+      computedStyle.backgroundImage === "none" ||
+      isTextClipped);
+
+  const hasNoPadding =
+    (computedStyle.paddingTop === "0px" || computedStyle.paddingTop === "") &&
+    (computedStyle.paddingRight === "0px" ||
+      computedStyle.paddingRight === "") &&
+    (computedStyle.paddingBottom === "0px" ||
+      computedStyle.paddingBottom === "") &&
+    (computedStyle.paddingLeft === "0px" || computedStyle.paddingLeft === "");
+
+  const hasNoBorder =
+    (computedStyle.borderTopWidth === "0px" ||
+      computedStyle.borderTopWidth === "") &&
+    (computedStyle.borderRightWidth === "0px" ||
+      computedStyle.borderRightWidth === "") &&
+    (computedStyle.borderBottomWidth === "0px" ||
+      computedStyle.borderBottomWidth === "") &&
+    (computedStyle.borderLeftWidth === "0px" ||
+      computedStyle.borderLeftWidth === "");
+
+  return hasNoBackground && hasNoPadding && hasNoBorder;
 }
 
 // Inline children that must NOT be merged into the paragraph text: replaced
@@ -131,6 +157,32 @@ const NON_MERGEABLE_INLINE_TAGS = new Set([
   "a",
   "button",
 ]);
+export function hasOnlyInlineFlowChildren(element: Element): boolean {
+  const childElements = Array.from(element.children);
+  if (childElements.length === 0) {
+    return false;
+  }
+
+  for (const child of childElements) {
+    const childStyle = window.getComputedStyle(child);
+    if (
+      childStyle.display !== "inline" &&
+      childStyle.display !== "inline-block" &&
+      childStyle.display !== "inline-flex"
+    ) {
+      return false;
+    }
+    const position = childStyle.position;
+    if (position === "absolute" || position === "fixed") {
+      return false;
+    }
+    const float = childStyle.float;
+    if (float === "left" || float === "right") {
+      return false;
+    }
+  }
+  return true;
+}
 
 /**
  * A block whose rendered children are all inline runs (sibling text nodes and
@@ -143,7 +195,7 @@ const NON_MERGEABLE_INLINE_TAGS = new Set([
  * child, or preserved whitespace (`white-space` other than the collapsing
  * defaults) — falls through to `frame`, preserving today's behavior.
  */
-function isInlineParagraph(element: Element): boolean {
+export function isInlineParagraph(element: Element): boolean {
   if (!(element.textContent || "").trim().length) {
     return false;
   }

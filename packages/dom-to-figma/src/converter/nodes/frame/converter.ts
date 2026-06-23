@@ -1,3 +1,4 @@
+import { hasOnlyInlineFlowChildren, isInlineParagraph } from "../../classify";
 import type { Position } from "../../dom";
 import type { ImageCache } from "../../image-cache";
 import { getNodeNameFromElement } from "../../naming";
@@ -197,6 +198,9 @@ export async function elementToFrameNodeChange(
     fillPaints.push(createSolidPaint({ r: 1, g: 1, b: 1, a: 0.01 }, 0.01));
   }
 
+  const shouldWrap =
+    hasOnlyInlineFlowChildren(element) && !isInlineParagraph(element);
+
   const nodeChange: FigmaNodeChange = {
     /* General Info */
     guid,
@@ -226,7 +230,12 @@ export async function elementToFrameNodeChange(
     },
 
     /* Layout */
-    stackMode: "NONE",
+    stackMode: shouldWrap ? "HORIZONTAL" : "NONE",
+    ...(shouldWrap && {
+      stackWrap: "WRAP",
+      stackCounterAlignItems: "BASELINE",
+      stackSpacing: 4,
+    }),
 
     /* Fill, Stroke And Corner Radius */
     fillPaints,
