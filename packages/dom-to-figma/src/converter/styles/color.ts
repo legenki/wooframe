@@ -29,8 +29,11 @@ export function cssColorToFigmaColor(cssColor: string): {
       },
       opacity: Number(color.alpha),
     };
-  } catch (_e) {
-    console.warn("Failed to parse color:", cssColor);
+  } catch {
+    const trimmed = cssColor.trim();
+    if (!(trimmed.startsWith("url(") || trimmed.startsWith("var("))) {
+      console.warn("Failed to parse color:", cssColor);
+    }
     return null;
   }
 }

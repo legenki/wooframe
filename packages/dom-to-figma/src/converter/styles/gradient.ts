@@ -24,7 +24,7 @@ function parseGradientStop(
   index: number,
   totalStops: number
 ): GradientStop | null {
-  const parts = stopString.trim().split(/\s+(?=\d+(?:%|px)?\s*$)/);
+  const parts = stopString.trim().split(/\s+(?=-?\d+(?:\.\d+)?(?:%|px)?\s*$)/);
 
   if (parts.length === 0) {
     return null;
