@@ -89,7 +89,8 @@ function isSvgShapeElement(element: Element): boolean {
 }
 
 function isImageElement(element: Element): boolean {
-  return element.tagName.toLowerCase() === "img";
+  const tagName = element.tagName.toLowerCase();
+  return tagName === "img" || tagName === "video";
 }
 
 /**

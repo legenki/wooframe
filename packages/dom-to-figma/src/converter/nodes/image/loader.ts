@@ -5,7 +5,7 @@
  */
 export type ImageRequest = {
   src: string;
-  element: HTMLImageElement;
+  element: HTMLImageElement | HTMLVideoElement;
 };
 
 /**
@@ -72,7 +72,26 @@ const PNG_QUALITY = 1.0;
  * chain should inject their own `ImageLoader`.
  */
 export function createDirectImageLoader(): ImageLoader {
-  return ({ src }) => decodeImageBytes(src);
+  return async ({ src, element }) => {
+    if (element.tagName.toLowerCase() === "video") {
+      try {
+        const video = element as HTMLVideoElement;
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth || video.clientWidth || 300;
+        canvas.height = video.videoHeight || video.clientHeight || 150;
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const dataUrl = canvas.toDataURL("image/png");
+          return decodeImageBytes(dataUrl);
+        }
+      } catch (e) {
+        console.warn("Failed to capture video frame (CORS or other error):", e);
+      }
+      return { bytes: new ArrayBuffer(0), mimeType: "image/png" };
+    }
+    return decodeImageBytes(src);
+  };
 }
 
 /**

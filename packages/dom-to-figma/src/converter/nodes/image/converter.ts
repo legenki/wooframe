@@ -23,7 +23,7 @@ type Params = {
 };
 
 export async function elementToImageNodeChange(
-  element: HTMLImageElement,
+  element: HTMLImageElement | HTMLVideoElement,
   options: Params
 ): Promise<FigmaRoundedRectangleNodeChange> {
   const { guid, parentGuid, childIndex, position, registerBlob, imageCache } =

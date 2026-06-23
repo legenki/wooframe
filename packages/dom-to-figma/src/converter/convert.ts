@@ -110,7 +110,7 @@ export async function convertElement(
     case "image":
       return {
         changes: [
-          await elementToImageNodeChange(element as HTMLImageElement, {
+          await elementToImageNodeChange(element as HTMLImageElement | HTMLVideoElement, {
             guid,
             parentGuid,
             childIndex,
