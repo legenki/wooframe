@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { CodeToUi, UiToCode } from "../messages";
 import { renderAndConvert } from "./render-host";
-import { loadHtmlFromUrl } from "./url-loader";
 
 const HTML_EXT = /\.html?$/i;
 
@@ -33,8 +32,6 @@ export function App() {
   const [isError, setIsError] = useState(false);
   const [over, setOver] = useState(false);
   const [width, setWidth] = useState<number>(DEFAULT_WIDTH);
-  const [url, setUrl] = useState("");
-  const [proxy, setProxy] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -100,23 +97,6 @@ export function App() {
     setHtml(text);
     setName(file.name.replace(HTML_EXT, ""));
     await runImport(text);
-  }
-
-  async function onImportUrl() {
-    setBusy(true);
-    setIsError(false);
-    setStatus("Loading URL…");
-    try {
-      const loaded = await loadHtmlFromUrl(url, proxy || undefined);
-      setHtml(loaded);
-      await runImport(loaded);
-    } catch (error) {
-      setBusy(false);
-      setIsError(true);
-      setStatus(
-        `Couldn't load that URL. The site or your proxy blocked the request (CORS). Try a different proxy or save the page as an .html file. (${(error as Error).message})`
-      );
-    }
   }
 
   return (
