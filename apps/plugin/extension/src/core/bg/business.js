@@ -90,7 +90,9 @@ async function saveSelectedLinks(tab) {
 			const onTabUpdated = (tabId, changeInfo) => {
 				if (changeInfo.status == "complete" && tabId == tab.id) {
 					browser.tabs.onUpdated.removeListener(onTabUpdated);
-					browser.tabs.sendMessage(tab.id, { method: "newUrls.addURLs", urls: response.urls });
+					browser.tabs.sendMessage(tab.id, { method: "newUrls.addURLs", urls: response.urls }).catch(() => {
+						// ignored: the tab may have been closed or navigated
+					});
 				}
 			};
 			browser.tabs.onUpdated.addListener(onTabUpdated);
@@ -199,7 +201,9 @@ function addTask(info) {
 }
 
 function openEditor(tab) {
-	browser.tabs.sendMessage(tab.id, { method: "content.openEditor" });
+	browser.tabs.sendMessage(tab.id, { method: "content.openEditor" }).catch(() => {
+		// ignored: the tab may have been closed or navigated
+	});
 }
 
 async function initMaxParallelWorkers() {

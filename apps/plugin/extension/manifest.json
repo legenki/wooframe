@@ -1,7 +1,7 @@
 {
   "name": "wooFrame Snapshot",
-  "author": "Gildas Lormeau",
-  "homepage_url": "https://www.getsinglefile.com",
+  "author": "Andy Legenki",
+  "homepage_url": "https://github.com/legenki/wooframe",
   "icons": {
     "16": "src/ui/resources/icon_16.png",
     "32": "src/ui/resources/icon_32.png",
@@ -9,7 +9,7 @@
     "64": "src/ui/resources/icon_64.png",
     "128": "src/ui/resources/icon_128.png"
   },
-  "version": "1.22.98",
+  "version": "26.6.0",
   "description": "__MSG_extensionDescription__",
   "content_scripts": [
     {

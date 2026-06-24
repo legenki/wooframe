@@ -465,7 +465,7 @@
         "singlefile.frameTree.ackInitRequest" == e.method
       )
         return (
-          browser.tabs.sendMessage(t.tab.id, e, { frameId: 0 }),
+          browser.tabs.sendMessage(t.tab.id, e, { frameId: 0 }).catch(() => {}),
           Promise.resolve({})
         );
     }));
@@ -1950,10 +1950,12 @@
             "complete" == o.status &&
               n == e.id &&
               (browser.tabs.onUpdated.removeListener(a),
-              browser.tabs.sendMessage(e.id, {
-                method: "newUrls.addURLs",
-                urls: t.urls,
-              }));
+              browser.tabs
+                .sendMessage(e.id, {
+                  method: "newUrls.addURLs",
+                  urls: t.urls,
+                })
+                .catch(() => {}));
           };
         browser.tabs.onUpdated.addListener(a);
       }
@@ -2220,7 +2222,7 @@
       saveUrls: pa,
       cancelTab: Ia,
       openEditor: function (e) {
-        browser.tabs.sendMessage(e.id, { method: "content.openEditor" });
+        browser.tabs.sendMessage(e.id, { method: "content.openEditor" }).catch(() => {});
       },
       saveSelectedLinks: ha,
       batchSaveUrls: wa,
