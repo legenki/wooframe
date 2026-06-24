@@ -7,11 +7,13 @@
     position: absolute;
     top: 10px;
     left: 10px;
-    border: 1px solid rgb(191, 191, 191);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 10px;
     z-index: 2147483646;
-    box-shadow: 3px 3px 3px rgba(33, 33, 33, .7);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, .12), 0 1px 3px rgba(0, 0, 0, .08);
     min-height: 100px;
     min-width: 100px;
+    overflow: hidden;
 }
 
 .note-selected {
@@ -56,6 +58,8 @@
     min-height: 30px;
     cursor: grab;
     user-select: none;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
 }
 
 .note .note-remove {
@@ -111,8 +115,8 @@
 }
 
 .note-moving {
-    opacity: .75;
-    box-shadow: 6px 6px 3px rgba(33, 33, 33, .7);
+    opacity: .85;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, .22), 0 3px 8px rgba(0, 0, 0, .14);
 }
 
 .note-moving * {
@@ -141,4 +145,38 @@
 
 .note-green blockquote {
     background-color: #9cff95;
+}
+
+@media (prefers-color-scheme: dark) {
+    .note {
+        border-color: rgba(255, 255, 255, 0.12);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, .5), 0 1px 3px rgba(0, 0, 0, .4);
+    }
+
+    .note textarea {
+        background-color: #2b2b2b;
+        color: #e6e6e6;
+    }
+
+    .note textarea:focus {
+        border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .note-red blockquote,
+    .note-green blockquote,
+    .note-blue blockquote {
+        background-color: #2b2b2b;
+    }
+
+    .note-red header {
+        background-color: #b3373b;
+    }
+
+    .note-green header {
+        background-color: #2f7d52;
+    }
+
+    .note-blue header {
+        background-color: #2f6db3;
+    }
 }
