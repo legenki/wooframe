@@ -179,4 +179,8 @@
     .note-blue header {
         background-color: #2f6db3;
     }
+
+    .note .note-anchor {
+        filter: invert(1);
+    }
 }
