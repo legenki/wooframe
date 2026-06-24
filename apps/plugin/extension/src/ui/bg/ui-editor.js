@@ -124,9 +124,11 @@ removeHighlightButton.onmouseup = () => {
 savePageButton.onmouseup = () => {
 	savePage();
 };
+let isMovingToFigma = false;
 if (moveToFigmaButton) {
 	moveToFigmaButton.onmouseup = () => {
-		alert("Feature coming soon: Export to Figma wooFrame!");
+		isMovingToFigma = true;
+		savePage();
 	};
 }
 
@@ -248,7 +250,16 @@ addEventListener("message", async event => {
 			if (tabData.options.addProof) {
 				pageData.hash = await singlefile.helper.digest("SHA-256", message.content);
 			}
-			tabData.options.url = message.url;
+			if (isMovingToFigma) {
+				isMovingToFigma = false;
+				try {
+					await navigator.clipboard.writeText(message.content);
+					alert("Annotated HTML copied to clipboard!\nOpen Figma and paste it into the 'wooFrame Import' plugin.");
+				} catch (err) {
+					alert("Failed to copy to clipboard: " + err);
+				}
+				return;
+			}
 			await download.downloadPage(pageData, tabData.options);
 		} else {
 			const pageData = {
@@ -263,6 +274,16 @@ addEventListener("message", async event => {
 			}
 			tabData.options.compressContent = false;
 			tabData.options.url = message.url;
+			if (isMovingToFigma) {
+				isMovingToFigma = false;
+				try {
+					await navigator.clipboard.writeText(message.content);
+					alert("Annotated HTML copied to clipboard!\nOpen Figma and paste it into the 'wooFrame Import' plugin.");
+				} catch (err) {
+					alert("Failed to copy to clipboard: " + err);
+				}
+				return;
+			}
 			await download.downloadPage(pageData, tabData.options);
 		}
 	}

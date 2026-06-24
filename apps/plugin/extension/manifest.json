@@ -130,11 +130,11 @@
     "scripting",
     "offscreen",
     "sidePanel",
-    "declarativeNetRequest"
+    "declarativeNetRequest",
+    "clipboardWrite"
   ],
   "optional_permissions": [
     "identity",
-    "clipboardWrite",
     "nativeMessaging",
     "bookmarks"
   ],
