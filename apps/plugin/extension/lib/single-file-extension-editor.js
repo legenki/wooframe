@@ -2748,6 +2748,11 @@
 					removeHighlightMode = false;
 					document.documentElement.classList.remove("single-file-remove-highlights-mode");
 				}
+				if (message.method == "removeAllAnnotations") {
+					document.querySelectorAll(NOTE_TAGNAME).forEach(noteElement => noteElement.remove());
+					document.querySelectorAll("." + HIGHLIGHT_CLASS).forEach(highlightedElement => resetHighlightedElement(highlightedElement));
+					onUpdate(false);
+				}
 				if (message.method == "enableEditPage") {
 					document.body.contentEditable = true;
 					onUpdate(false);
