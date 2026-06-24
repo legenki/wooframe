@@ -12,16 +12,18 @@ export function createImageCache(imageLoader: ImageLoader): ImageCache {
   return new DedupCache({
     load: (element) =>
       imageLoader({
-        src: (element as any).src || (element as any).currentSrc,
+        src: element.src || element.currentSrc,
         element,
       }).then(processImageFile),
     toCacheKey: (element) => {
-      const src = (element as any).src || (element as any).currentSrc;
-      if (src) return src;
+      const src = element.src || element.currentSrc;
+      if (src) {
+        return src;
+      }
       if (element.tagName.toLowerCase() === "video") {
         const poster = (element as HTMLVideoElement).poster;
         if (poster) {
-          return `video-poster-${poster.length}-${poster.substring(0, 50)}-${poster.substring(poster.length - 50)}`;
+          return `video-poster-${poster.length}-${poster.slice(0, 50)}-${poster.slice(poster.length - 50)}`;
         }
       }
       return `no-src-${uniqueCounter++}`;

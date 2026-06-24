@@ -581,15 +581,15 @@ expandAllButton.addEventListener("click", () => {
 	}
 	document.querySelectorAll("details").forEach(detailElement => detailElement.open = Boolean(expandAllButton.className));
 }, false);
-saveToFilesystemInput.addEventListener("click", () => disableDestinationPermissions(["clipboardWrite", "nativeMessaging"]), false);
+saveToFilesystemInput.addEventListener("click", () => disableDestinationPermissions(["nativeMessaging"]), false);
 saveToClipboardInput.addEventListener("click", () => disableDestinationPermissions(["nativeMessaging"]), false);
-saveWithCompanionInput.addEventListener("click", () => disableDestinationPermissions(["clipboardWrite"]), false);
-saveToGDriveInput.addEventListener("click", () => disableDestinationPermissions(["clipboardWrite", "nativeMessaging"], false), false);
-saveToDropboxInput.addEventListener("click", () => disableDestinationPermissions(["clipboardWrite", "nativeMessaging"], true, false), false);
-saveWithWebDAVInput.addEventListener("click", () => disableDestinationPermissions(["clipboardWrite", "nativeMessaging"]), false);
-saveWithMCPInput.addEventListener("click", () => disableDestinationPermissions(["clipboardWrite", "nativeMessaging"]), false);
-saveToRestFormApiInput.addEventListener("click", () => disableDestinationPermissions(["clipboardWrite", "nativeMessaging"]), false);
-sharePageInput.addEventListener("click", () => disableDestinationPermissions(["clipboardWrite", "nativeMessaging"]), false);
+saveWithCompanionInput.addEventListener("click", () => disableDestinationPermissions([]), false);
+saveToGDriveInput.addEventListener("click", () => disableDestinationPermissions(["nativeMessaging"], false), false);
+saveToDropboxInput.addEventListener("click", () => disableDestinationPermissions(["nativeMessaging"], true, false), false);
+saveWithWebDAVInput.addEventListener("click", () => disableDestinationPermissions(["nativeMessaging"]), false);
+saveWithMCPInput.addEventListener("click", () => disableDestinationPermissions(["nativeMessaging"]), false);
+saveToRestFormApiInput.addEventListener("click", () => disableDestinationPermissions(["nativeMessaging"]), false);
+sharePageInput.addEventListener("click", () => disableDestinationPermissions(["nativeMessaging"]), false);
 saveCreatedBookmarksInput.addEventListener("click", saveCreatedBookmarks, false);
 autoSaveExternalSaveInput.addEventListener("click", () => enableExternalSave(autoSaveExternalSaveInput), false);
 saveWithCompanionInput.addEventListener("click", () => enableExternalSave(saveWithCompanionInput), false);

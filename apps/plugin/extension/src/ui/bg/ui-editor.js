@@ -132,6 +132,16 @@ if (moveToFigmaButton) {
 	};
 }
 
+async function copyToFigmaClipboard(content) {
+	isMovingToFigma = false;
+	try {
+		await navigator.clipboard.writeText(content);
+		alert("Annotated HTML copied to clipboard!\nOpen Figma and paste it into the 'wooFrame Import' plugin.");
+	} catch (err) {
+		alert("Failed to copy to clipboard: " + err);
+	}
+}
+
 let toolbarPositionPointer, toolbarMoving, toolbarTranslateMax;
 let orientationPortrait = matchMedia("(orientation: portrait)").matches;
 let toolbarTranslate = 0;
@@ -251,13 +261,7 @@ addEventListener("message", async event => {
 				pageData.hash = await singlefile.helper.digest("SHA-256", message.content);
 			}
 			if (isMovingToFigma) {
-				isMovingToFigma = false;
-				try {
-					await navigator.clipboard.writeText(message.content);
-					alert("Annotated HTML copied to clipboard!\nOpen Figma and paste it into the 'wooFrame Import' plugin.");
-				} catch (err) {
-					alert("Failed to copy to clipboard: " + err);
-				}
+				await copyToFigmaClipboard(message.content);
 				return;
 			}
 			await download.downloadPage(pageData, tabData.options);
@@ -275,13 +279,7 @@ addEventListener("message", async event => {
 			tabData.options.compressContent = false;
 			tabData.options.url = message.url;
 			if (isMovingToFigma) {
-				isMovingToFigma = false;
-				try {
-					await navigator.clipboard.writeText(message.content);
-					alert("Annotated HTML copied to clipboard!\nOpen Figma and paste it into the 'wooFrame Import' plugin.");
-				} catch (err) {
-					alert("Failed to copy to clipboard: " + err);
-				}
+				await copyToFigmaClipboard(message.content);
 				return;
 			}
 			await download.downloadPage(pageData, tabData.options);

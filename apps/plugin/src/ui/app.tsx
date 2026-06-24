@@ -171,7 +171,10 @@ export function App() {
       {busy && !isError && (
         <div className="preloader">
           <div className="progress-track">
-            <div className="progress-fill" style={{ width: `${Math.max(0, Math.min(100, percent))}%` }} />
+            <div
+              className="progress-fill"
+              style={{ width: `${Math.max(0, Math.min(100, percent))}%` }}
+            />
           </div>
           <p className="progress-text">{status}</p>
           <p className="progress-percent">{Math.round(percent)}%</p>

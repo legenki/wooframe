@@ -133,11 +133,7 @@
     "declarativeNetRequest",
     "clipboardWrite"
   ],
-  "optional_permissions": [
-    "identity",
-    "nativeMessaging",
-    "bookmarks"
-  ],
+  "optional_permissions": ["identity", "nativeMessaging", "bookmarks"],
   "host_permissions": ["<all_urls>"],
   "devtools_page": "src/core/devtools/devtools.html",
   "incognito": "spanning",

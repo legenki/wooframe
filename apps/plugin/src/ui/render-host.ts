@@ -65,7 +65,7 @@ const customImageLoader = async (request: ImageRequest): Promise<ImageFile> => {
           return { bytes: buffer, mimeType: "image/png" };
         }
       }
-    } catch (e) {
+    } catch {
       console.log("CORS error, trying main thread proxy for video:", src);
       try {
         const objectUrl = await fetchCorsVideoAsObjectURL(
@@ -146,7 +146,7 @@ export async function renderAndConvert(
       height,
       name: rootName,
     });
-    
+
     onProgress?.("Sending to Figma...", 70);
     return {
       nodeChanges: result.document.nodeChanges,
@@ -195,7 +195,7 @@ async function waitForMedia(doc: Document | null): Promise<void> {
   const videos = Array.from(doc.querySelectorAll("video"));
   const images = Array.from(doc.querySelectorAll("img"));
 
-  const promises: Promise<void>[] = [];
+  const promises: Array<Promise<void>> = [];
 
   for (const video of videos) {
     if (video.readyState >= 2) {
