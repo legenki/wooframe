@@ -25,7 +25,6 @@
 
 import * as config from "./config.js";
 import * as business from "./business.js";
-import * as companion from "./companion.js";
 import * as downloads from "./downloads.js";
 import * as tabsData from "./tabs-data.js";
 import * as ui from "./../../ui/bg/index.js";
@@ -152,81 +151,16 @@ async function saveContent(message, tab) {
 		options.tabIndex = tab.index;
 		let pageData;
 		try {
-			if (options.autoSaveExternalSave) {
-				await companion.externalSave(options);
-			} else {
+			{
 				pageData = await offscreen.processPage(options);
 				let skipped;
-				if (!options.saveToGDrive && !options.saveWithWebDAV && !options.saveWithMCP && !options.saveToGitHub && !options.saveToDropbox && !options.saveWithCompanion && !options.saveToRestFormApi && !options.saveToS3) {
+				{
 					const testSkip = await downloads.testSkipSave(pageData.filename, options);
 					skipped = testSkip.skipped;
 					options.filenameConflictAction = testSkip.filenameConflictAction;
 				}
 				if (!skipped) {
-					if (options.saveToGDrive) {
-						const content = await (await fetch(pageData.url)).blob();
-						await downloads.saveToGDrive(message.taskId, downloads.encodeSharpCharacter(pageData.filename), content, options, {
-							forceWebAuthFlow: options.forceWebAuthFlow
-						}, {
-							filenameConflictAction: options.filenameConflictAction
-						});
-					} if (options.saveToDropbox) {
-						const content = await (await fetch(pageData.url)).blob();
-						await downloads.saveToDropbox(message.taskId, downloads.encodeSharpCharacter(pageData.filename), content, {
-							filenameConflictAction: options.filenameConflictAction
-						});
-					} else if (options.saveWithWebDAV) {
-						const content = await (await fetch(pageData.url)).blob();
-						await downloads.saveWithWebDAV(message.taskId, downloads.encodeSharpCharacter(pageData.filename), content, options.webDAVURL, options.webDAVUser, options.webDAVPassword, {
-							filenameConflictAction: options.filenameConflictAction
-						});
-					} else if (options.saveWithMCP) {
-						const content = await (await fetch(pageData.url)).blob();
-						await downloads.saveWithMCP(message.taskId, downloads.encodeSharpCharacter(pageData.filename), content, options.mcpServerUrl, options.mcpAuthToken, {
-							filenameConflictAction: options.filenameConflictAction
-						});
-					} else if (options.saveToGitHub) {
-						const content = await (await fetch(pageData.url)).blob();
-						await (await downloads.saveToGitHub(message.taskId, downloads.encodeSharpCharacter(pageData.filename), content, options.githubToken, options.githubUser, options.githubRepository, options.githubBranch, {
-							filenameConflictAction: options.filenameConflictAction
-						})).pushPromise;
-					} else if (options.saveWithCompanion && !options.compressContent) {
-						const content = await (await fetch(pageData.url)).text();
-						await companion.save({
-							filename: pageData.filename,
-							content: content,
-							title: pageData.title,
-							url: options.url,
-							filenameConflictAction: options.filenameConflictAction
-						});
-					} else if (options.saveToRestFormApi) {
-						const content = await (await fetch(pageData.url)).blob();
-						await downloads.saveToRestFormApi(
-							message.taskId,
-							pageData.filename,
-							content,
-							options.url,
-							options.saveToRestFormApiToken,
-							options.saveToRestFormApiUrl,
-							options.saveToRestFormApiFileFieldName,
-							options.saveToRestFormApiUrlFieldName
-						);
-					} else if (options.saveToS3) {
-						const content = await (await fetch(pageData.url)).blob();
-						await downloads.saveToS3(
-							message.taskId,
-							pageData.filename,
-							content,
-							options.S3Domain,
-							options.S3Region,
-							options.S3Bucket,
-							options.S3AccessKey,
-							options.S3SecretKey,
-							{ filenameConflictAction: options.filenameConflictAction }
-						);
-					} else {
-						await downloads.downloadPage(pageData, options);
-					}
+					await downloads.downloadPage(pageData, options);
 					if (options.openSavedPage) {
 						const createTabProperties = { active: true, url: "/src/ui/pages/viewer.html?compressed=true&blobURI=" + pageData.url, windowId: tab.windowId };
 						const index = tab.index;
