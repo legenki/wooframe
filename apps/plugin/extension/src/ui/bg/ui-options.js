@@ -63,30 +63,8 @@ const saveRawPageLabel = document.getElementById("saveRawPageLabel");
 const insertMetaCSPLabel = document.getElementById("insertMetaCSPLabel");
 const saveToClipboardLabel = document.getElementById("saveToClipboardLabel");
 const saveToFilesystemLabel = document.getElementById("saveToFilesystemLabel");
-const sharePageLabel = document.getElementById("sharePageLabel");
 const addProofLabel = document.getElementById("addProofLabel");
 const woleetKeyLabel = document.getElementById("woleetKeyLabel");
-const saveToGDriveLabel = document.getElementById("saveToGDriveLabel");
-const saveToDropboxLabel = document.getElementById("saveToDropboxLabel");
-const saveWithWebDAVLabel = document.getElementById("saveWithWebDAVLabel");
-const webDAVURLLabel = document.getElementById("webDAVURLLabel");
-const webDAVUserLabel = document.getElementById("webDAVUserLabel");
-const webDAVPasswordLabel = document.getElementById("webDAVPasswordLabel");
-const saveWithMCPLabel = document.getElementById("saveWithMCPLabel");
-const mcpServerUrlLabel = document.getElementById("mcpServerUrlLabel");
-const mcpAuthTokenLabel = document.getElementById("mcpAuthTokenLabel");
-const saveToGitHubLabel = document.getElementById("saveToGitHubLabel");
-const githubTokenLabel = document.getElementById("githubTokenLabel");
-const githubUserLabel = document.getElementById("githubUserLabel");
-const githubRepositoryLabel = document.getElementById("githubRepositoryLabel");
-const githubBranchLabel = document.getElementById("githubBranchLabel");
-const saveWithCompanionLabel = document.getElementById("saveWithCompanionLabel");
-const saveToS3Label = document.getElementById("saveToS3Label");
-const S3DomainLabel = document.getElementById("S3DomainLabel");
-const S3RegionLabel = document.getElementById("S3RegionLabel");
-const S3BucketLabel = document.getElementById("S3BucketLabel");
-const S3AccessKeyLabel = document.getElementById("S3AccessKeyLabel");
-const S3SecretKeyLabel = document.getElementById("S3SecretKeyLabel");
 const compressHTMLLabel = document.getElementById("compressHTMLLabel");
 const insertTextBodyLabel = document.getElementById("insertTextBodyLabel");
 const insertEmbeddedImageLabel = document.getElementById("insertEmbeddedImageLabel");
@@ -235,23 +213,6 @@ const insertMetaCSPInput = document.getElementById("insertMetaCSPInput");
 const saveToClipboardInput = document.getElementById("saveToClipboardInput");
 const addProofInput = document.getElementById("addProofInput");
 const woleetKeyInput = document.getElementById("woleetKeyInput");
-const saveToGDriveInput = document.getElementById("saveToGDriveInput");
-const saveToDropboxInput = document.getElementById("saveToDropboxInput");
-const saveWithWebDAVInput = document.getElementById("saveWithWebDAVInput");
-const webDAVURLInput = document.getElementById("webDAVURLInput");
-const webDAVUserInput = document.getElementById("webDAVUserInput");
-const webDAVPasswordInput = document.getElementById("webDAVPasswordInput");
-const saveWithMCPInput = document.getElementById("saveWithMCPInput");
-const mcpServerUrlInput = document.getElementById("mcpServerUrlInput");
-const mcpAuthTokenInput = document.getElementById("mcpAuthTokenInput");
-const saveToGitHubInput = document.getElementById("saveToGitHubInput");
-const saveToS3Input = document.getElementById("saveToS3Input");
-const githubTokenInput = document.getElementById("githubTokenInput");
-const githubUserInput = document.getElementById("githubUserInput");
-const githubRepositoryInput = document.getElementById("githubRepositoryInput");
-const githubBranchInput = document.getElementById("githubBranchInput");
-const saveWithCompanionInput = document.getElementById("saveWithCompanionInput");
-const sharePageInput = document.getElementById("sharePageInput");
 const saveToFilesystemInput = document.getElementById("saveToFilesystemInput");
 const compressHTMLInput = document.getElementById("compressHTMLInput");
 const insertTextBodyInput = document.getElementById("insertTextBodyInput");
@@ -355,21 +316,6 @@ const promptCancelButton = document.getElementById("promptCancelButton");
 const promptConfirmButton = document.getElementById("promptConfirmButton");
 const manifest = browser.runtime.getManifest();
 const requestPermissionIdentity = manifest.optional_permissions && manifest.optional_permissions.includes("identity");
-const saveToRestFormApiLabel = document.getElementById("saveToRestFormApiLabel");
-const saveToRestFormApiUrlLabel = document.getElementById("saveToRestFormApiUrlLabel");
-const saveToRestFormApiFileFieldNameLabel = document.getElementById("saveToRestFormApiFileFieldNameLabel");
-const saveToRestFormApiUrlFieldNameLabel = document.getElementById("saveToRestFormApiUrlFieldNameLabel");
-const saveToRestFormApiTokenLabel = document.getElementById("saveToRestFormApiTokenLabel");
-const saveToRestFormApiInput = document.getElementById("saveToRestFormApiInput");
-const saveToRestFormApiUrlInput = document.getElementById("saveToRestFormApiUrlInput");
-const saveToRestFormApiFileFieldNameInput = document.getElementById("saveToRestFormApiFileFieldNameInput");
-const saveToRestFormApiUrlFieldNameInput = document.getElementById("saveToRestFormApiUrlFieldNameInput");
-const saveToRestFormApiTokenInput = document.getElementById("saveToRestFormApiTokenInput");
-const S3DomainInput = document.getElementById("S3DomainInput");
-const S3RegionInput = document.getElementById("S3RegionInput");
-const S3BucketInput = document.getElementById("S3BucketInput");
-const S3AccessKeyInput = document.getElementById("S3AccessKeyInput");
-const S3SecretKeyInput = document.getElementById("S3SecretKeyInput");
 
 let sidePanelDisplay, lastURLValue = "", lastProfileValue = "", lastAutoSaveProfileValue = "";
 if (location.href.endsWith("#side-panel")) {
@@ -540,11 +486,7 @@ importButton.addEventListener("click", () => {
 			const config = JSON.parse(serializedConfig);
 			Object.keys(config.profiles).forEach(profileName => {
 				const profile = config.profiles[profileName];
-				if (profile.saveToGDrive && !profile.forceWebAuthFlow) {
-					profile.saveToGDrive = false;
-				}
 				profile.saveToClipboard = false;
-				profile.saveWithCompanion = false;
 				profile.saveCreatedBookmarks = false;
 				profile.passReferrerOnError = false;
 			});
@@ -583,18 +525,9 @@ expandAllButton.addEventListener("click", () => {
 }, false);
 saveToFilesystemInput.addEventListener("click", () => disableDestinationPermissions(["nativeMessaging"]), false);
 saveToClipboardInput.addEventListener("click", () => disableDestinationPermissions(["nativeMessaging"]), false);
-saveWithCompanionInput.addEventListener("click", () => disableDestinationPermissions([]), false);
-saveToGDriveInput.addEventListener("click", () => disableDestinationPermissions(["nativeMessaging"], false), false);
-saveToDropboxInput.addEventListener("click", () => disableDestinationPermissions(["nativeMessaging"], true, false), false);
-saveWithWebDAVInput.addEventListener("click", () => disableDestinationPermissions(["nativeMessaging"]), false);
-saveWithMCPInput.addEventListener("click", () => disableDestinationPermissions(["nativeMessaging"]), false);
-saveToRestFormApiInput.addEventListener("click", () => disableDestinationPermissions(["nativeMessaging"]), false);
-sharePageInput.addEventListener("click", () => disableDestinationPermissions(["nativeMessaging"]), false);
 saveCreatedBookmarksInput.addEventListener("click", saveCreatedBookmarks, false);
 autoSaveExternalSaveInput.addEventListener("click", () => enableExternalSave(autoSaveExternalSaveInput), false);
-saveWithCompanionInput.addEventListener("click", () => enableExternalSave(saveWithCompanionInput), false);
 saveToClipboardInput.addEventListener("click", onClickSaveToClipboard, false);
-saveToGDriveInput.addEventListener("click", onClickSaveToGDrive, false);
 addProofInput.addEventListener("click", async event => {
 	if (addProofInput.checked) {
 		addProofInput.checked = false;
@@ -687,30 +620,8 @@ saveRawPageLabel.textContent = browser.i18n.getMessage("optionSaveRawPage");
 insertMetaCSPLabel.textContent = browser.i18n.getMessage("optionInsertMetaCSP");
 saveToClipboardLabel.textContent = browser.i18n.getMessage("optionSaveToClipboard");
 saveToFilesystemLabel.textContent = browser.i18n.getMessage("optionSaveToFilesystem");
-sharePageLabel.textContent = browser.i18n.getMessage("optionSharePage");
 addProofLabel.textContent = browser.i18n.getMessage("optionAddProof");
 woleetKeyLabel.textContent = browser.i18n.getMessage("optionWoleetKey");
-saveToGDriveLabel.textContent = browser.i18n.getMessage("optionSaveToGDrive");
-saveToDropboxLabel.textContent = browser.i18n.getMessage("optionSaveToDropbox");
-saveWithWebDAVLabel.textContent = browser.i18n.getMessage("optionSaveWithWebDAV");
-webDAVURLLabel.textContent = browser.i18n.getMessage("optionWebDAVURL");
-webDAVUserLabel.textContent = browser.i18n.getMessage("optionWebDAVUser");
-webDAVPasswordLabel.textContent = browser.i18n.getMessage("optionWebDAVPassword");
-saveWithMCPLabel.textContent = browser.i18n.getMessage("optionSaveWithMCP");
-mcpServerUrlLabel.textContent = browser.i18n.getMessage("optionMCPServerUrl");
-mcpAuthTokenLabel.textContent = browser.i18n.getMessage("optionMCPAuthToken");
-saveToGitHubLabel.textContent = browser.i18n.getMessage("optionSaveToGitHub");
-githubTokenLabel.textContent = browser.i18n.getMessage("optionGitHubToken");
-githubUserLabel.textContent = browser.i18n.getMessage("optionGitHubUser");
-githubRepositoryLabel.textContent = browser.i18n.getMessage("optionGitHubRepository");
-githubBranchLabel.textContent = browser.i18n.getMessage("optionGitHubBranch");
-saveToS3Label.textContent = browser.i18n.getMessage("optionSaveToS3");
-S3DomainLabel.textContent = browser.i18n.getMessage("optionS3Domain");
-S3RegionLabel.textContent = browser.i18n.getMessage("optionS3Region");
-S3BucketLabel.textContent = browser.i18n.getMessage("optionS3Bucket");
-S3AccessKeyLabel.textContent = browser.i18n.getMessage("optionS3AccessKey");
-S3SecretKeyLabel.textContent = browser.i18n.getMessage("optionS3SecretKey");
-saveWithCompanionLabel.textContent = browser.i18n.getMessage("optionSaveWithCompanion");
 compressHTMLLabel.textContent = browser.i18n.getMessage("optionCompressHTML");
 insertTextBodyLabel.textContent = browser.i18n.getMessage("optionInsertTextBody");
 insertEmbeddedImageLabel.textContent = browser.i18n.getMessage("optionInsertEmbeddedImage");
@@ -846,11 +757,6 @@ resetCurrentButton.textContent = browser.i18n.getMessage("optionsResetCurrentBut
 resetCancelButton.textContent = promptCancelButton.textContent = cancelButton.textContent = browser.i18n.getMessage("optionsCancelButton");
 confirmButton.textContent = promptConfirmButton.textContent = browser.i18n.getMessage("optionsOKButton");
 document.getElementById("resetConfirmLabel").textContent = browser.i18n.getMessage("optionsResetConfirm");
-saveToRestFormApiLabel.textContent = browser.i18n.getMessage("optionSaveToRestFormApi");
-saveToRestFormApiUrlLabel.textContent = browser.i18n.getMessage("optionRestFormApiUrl");
-saveToRestFormApiFileFieldNameLabel.textContent = browser.i18n.getMessage("optionRestFormApiFileFieldName");
-saveToRestFormApiUrlFieldNameLabel.textContent = browser.i18n.getMessage("optionRestFormApiUrlFieldName");
-saveToRestFormApiTokenLabel.textContent = browser.i18n.getMessage("optionRestFormApiToken");
 
 if (location.href.endsWith("#")) {
 	document.querySelector(".new-window-link").remove();
@@ -868,9 +774,6 @@ function init() {
 		document.getElementById("backgroundSaveOptions").hidden = true;
 		document.getElementById("confirmFilenameOption").hidden = true;
 		document.getElementById("filenameConflictAction").hidden = true;
-	}
-	if (!SHARE_API_SUPPORTED) {
-		document.getElementById("sharePageOption").hidden = true;
 	}
 }
 
@@ -997,52 +900,7 @@ async function refresh(profileName) {
 	addProofInput.checked = profileOptions.addProof;
 	woleetKeyInput.value = profileOptions.woleetKey;
 	woleetKeyInput.disabled = !profileOptions.addProof;
-	saveToGDriveInput.checked = profileOptions.saveToGDrive;
-	saveToDropboxInput.checked = profileOptions.saveToDropbox;
-	saveWithWebDAVInput.checked = profileOptions.saveWithWebDAV;
-	webDAVURLInput.value = profileOptions.webDAVURL;
-	webDAVURLInput.disabled = !profileOptions.saveWithWebDAV;
-	webDAVUserInput.value = profileOptions.webDAVUser;
-	webDAVUserInput.disabled = !profileOptions.saveWithWebDAV;
-	webDAVPasswordInput.value = profileOptions.webDAVPassword;
-	webDAVPasswordInput.disabled = !profileOptions.saveWithWebDAV;
-	saveWithMCPInput.checked = profileOptions.saveWithMCP;
-	mcpServerUrlInput.value = profileOptions.mcpServerUrl;
-	mcpServerUrlInput.disabled = !profileOptions.saveWithMCP;
-	mcpAuthTokenInput.value = profileOptions.mcpAuthToken;
-	mcpAuthTokenInput.disabled = !profileOptions.saveWithMCP;
-	saveToGitHubInput.checked = profileOptions.saveToGitHub;
-	githubTokenInput.value = profileOptions.githubToken;
-	githubTokenInput.disabled = !profileOptions.saveToGitHub;
-	githubUserInput.value = profileOptions.githubUser;
-	githubUserInput.disabled = !profileOptions.saveToGitHub;
-	githubRepositoryInput.value = profileOptions.githubRepository;
-	githubRepositoryInput.disabled = !profileOptions.saveToGitHub;
-	githubBranchInput.value = profileOptions.githubBranch;
-	githubBranchInput.disabled = !profileOptions.saveToGitHub;
-	saveWithCompanionInput.checked = profileOptions.saveWithCompanion;
-	saveToRestFormApiInput.checked = profileOptions.saveToRestFormApi;
-	saveToRestFormApiUrlInput.value = profileOptions.saveToRestFormApiUrl;
-	saveToRestFormApiUrlInput.disabled = !profileOptions.saveToRestFormApi;
-	saveToRestFormApiTokenInput.value = profileOptions.saveToRestFormApiToken;
-	saveToRestFormApiTokenInput.disabled = !profileOptions.saveToRestFormApi;
-	saveToRestFormApiFileFieldNameInput.value = profileOptions.saveToRestFormApiFileFieldName;
-	saveToRestFormApiFileFieldNameInput.disabled = !profileOptions.saveToRestFormApi;
-	saveToRestFormApiUrlFieldNameInput.value = profileOptions.saveToRestFormApiUrlFieldName;
-	saveToRestFormApiUrlFieldNameInput.disabled = !profileOptions.saveToRestFormApi;
-	saveToS3Input.checked = profileOptions.saveToS3;
-	S3DomainInput.value = profileOptions.S3Domain;
-	S3DomainInput.disabled = !profileOptions.saveToS3;
-	S3RegionInput.value = profileOptions.S3Region;
-	S3RegionInput.disabled = !profileOptions.saveToS3;
-	S3BucketInput.value = profileOptions.S3Bucket;
-	S3BucketInput.disabled = !profileOptions.saveToS3;
-	S3AccessKeyInput.value = profileOptions.S3AccessKey;
-	S3AccessKeyInput.disabled = !profileOptions.saveToS3;
-	S3SecretKeyInput.value = profileOptions.S3SecretKey;
-	S3SecretKeyInput.disabled = !profileOptions.saveToS3;
-	sharePageInput.checked = profileOptions.sharePage;
-	saveToFilesystemInput.checked = !profileOptions.saveToGDrive && !profileOptions.saveToGitHub && !profileOptions.saveToS3 && !profileOptions.saveWithCompanion && !profileOptions.saveToClipboard && !profileOptions.saveWithWebDAV && !profileOptions.saveWithMCP && !profileOptions.saveToDropbox && !profileOptions.saveToRestFormApi && !profileOptions.sharePage;
+	saveToFilesystemInput.checked = !profileOptions.saveToClipboard;
 	compressHTMLInput.checked = profileOptions.compressHTML;
 	compressCSSInput.checked = profileOptions.compressCSS;
 	groupDuplicateStylesheetsInput.checked = profileOptions.groupDuplicateStylesheets;
@@ -1199,22 +1057,6 @@ async function update() {
 			saveToClipboard: saveToClipboardInput.checked,
 			addProof: addProofInput.checked,
 			woleetKey: woleetKeyInput.value,
-			saveToGDrive: saveToGDriveInput.checked,
-			saveToDropbox: saveToDropboxInput.checked,
-			saveWithWebDAV: saveWithWebDAVInput.checked,
-			webDAVURL: webDAVURLInput.value,
-			webDAVUser: webDAVUserInput.value,
-			webDAVPassword: webDAVPasswordInput.value,
-			saveWithMCP: saveWithMCPInput.checked,
-			mcpServerUrl: mcpServerUrlInput.value,
-			mcpAuthToken: mcpAuthTokenInput.value,
-			saveToGitHub: saveToGitHubInput.checked,
-			githubToken: githubTokenInput.value,
-			githubUser: githubUserInput.value,
-			githubRepository: githubRepositoryInput.value,
-			githubBranch: githubBranchInput.value,
-			saveWithCompanion: saveWithCompanionInput.checked,
-			sharePage: sharePageInput.checked,
 			compressHTML: compressHTMLInput.checked,
 			insertTextBody: insertTextBodyInput.checked,
 			insertEmbeddedImage: insertEmbeddedCustomImageInput.checked,
@@ -1285,17 +1127,6 @@ async function update() {
 			contentWidth: contentWidthInput.value,
 			warnUnsavedPage: warnUnsavedPageInput.checked,
 			displayInfobarInEditor: displayInfobarInEditorInput.checked,
-			saveToRestFormApi: saveToRestFormApiInput.checked,
-			saveToRestFormApiUrl: saveToRestFormApiUrlInput.value,
-			saveToRestFormApiToken: saveToRestFormApiTokenInput.value,
-			saveToRestFormApiFileFieldName: saveToRestFormApiFileFieldNameInput.value,
-			saveToRestFormApiUrlFieldName: saveToRestFormApiUrlFieldNameInput.value,
-			saveToS3: saveToS3Input.checked,
-			S3Domain: S3DomainInput.value,
-			S3Region: S3RegionInput.value,
-			S3Bucket: S3BucketInput.value,
-			S3AccessKey: S3AccessKeyInput.value,
-			S3SecretKey: S3SecretKeyInput.value,
 			customShortcut: selectedCustomShortcut
 		}
 	});
@@ -1363,7 +1194,6 @@ async function onClickSaveToClipboard() {
 			const permissionGranted = await browser.permissions.request({ permissions: ["clipboardWrite"] });
 			if (permissionGranted) {
 				saveToClipboardInput.checked = true;
-				await browser.runtime.sendMessage({ method: "downloads.disableGDrive" });
 			}
 			// eslint-disable-next-line no-unused-vars
 		} catch (error) {
@@ -1374,35 +1204,7 @@ async function onClickSaveToClipboard() {
 	await refresh();
 }
 
-async function onClickSaveToGDrive() {
-	if (saveToGDriveInput.checked) {
-		saveToGDriveInput.checked = false;
-		try {
-			if (requestPermissionIdentity) {
-				const permissionGranted = await browser.permissions.request({ permissions: ["identity"] });
-				if (permissionGranted) {
-					saveToGDriveInput.checked = true;
-				}
-			} else {
-				saveToGDriveInput.checked = true;
-			}
-			// eslint-disable-next-line no-unused-vars
-		} catch (error) {
-			saveToGDriveInput.checked = false;
-			await browser.runtime.sendMessage({ method: "downloads.disableGDrive" });
-		}
-	}
-	await update();
-	await refresh();
-}
-
-async function disableDestinationPermissions(permissions, disableGDrive = true, disableDropbox = true) {
-	if (disableGDrive) {
-		await browser.runtime.sendMessage({ method: "downloads.disableGDrive" });
-	}
-	if (disableDropbox) {
-		await browser.runtime.sendMessage({ method: "downloads.disableDropbox" });
-	}
+async function disableDestinationPermissions(permissions) {
 	try {
 		await browser.permissions.remove({ permissions });
 		// eslint-disable-next-line no-unused-vars
