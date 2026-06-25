@@ -98,24 +98,6 @@ const DEFAULT_CONFIG = {
 	saveRawPage: false,
 	saveToClipboard: false,
 	addProof: false,
-	saveToGDrive: false,
-	saveToDropbox: false,
-	saveWithWebDAV: false,
-	webDAVURL: "",
-	webDAVUser: "",
-	webDAVPassword: "",
-	saveWithMCP: false,
-	mcpServerUrl: "",
-	mcpAuthToken: "",
-	saveToGitHub: false,
-	saveToRestFormApi: false,
-	saveToS3: false,
-	githubToken: "",
-	githubUser: "",
-	githubRepository: "SingleFile-Archives",
-	githubBranch: "main",
-	saveWithCompanion: false,
-	sharePage: false,
 	forceWebAuthFlow: false,
 	resolveFragmentIdentifierURLs: false,
 	userScriptEnabled: false,
@@ -170,15 +152,6 @@ const DEFAULT_CONFIG = {
 	delayBeforeProcessing: 0,
 	delayAfterProcessing: 0,
 	_migratedTemplateFormat: true,
-	saveToRestFormApiUrl: "",
-	saveToRestFormApiFileFieldName: "",
-	saveToRestFormApiUrlFieldName: "",
-	saveToRestFormApiToken: "",
-	S3Domain: "s3.amazonaws.com",
-	S3Region: "",
-	S3Bucket: "",
-	S3AccessKey: "",
-	S3SecretKey: "",
 	resolveLinks: true,
 	groupDuplicateStylesheets: false,
 	infobarPositionAbsolute: false,
@@ -239,13 +212,7 @@ export {
 	getProfiles,
 	onMessage,
 	updateRule,
-	addRule,
-	getAuthInfo,
-	getDropboxAuthInfo,
-	setAuthInfo,
-	setDropboxAuthInfo,
-	removeAuthInfo,
-	removeDropboxAuthInfo
+	addRule
 };
 
 async function upgrade() {
@@ -605,40 +572,6 @@ async function updateRule(url, newURL, profile, autoSaveProfile) {
 	urlConfig.profile = profile;
 	urlConfig.autoSaveProfile = autoSaveProfile;
 	await configStorage.set({ rules });
-}
-
-async function getAuthInfo() {
-	return (await configStorage.get()).authInfo;
-}
-
-async function getDropboxAuthInfo() {
-	return (await configStorage.get()).dropboxAuthInfo;
-}
-
-async function setAuthInfo(authInfo) {
-	await configStorage.set({ authInfo });
-}
-
-async function setDropboxAuthInfo(authInfo) {
-	await configStorage.set({ dropboxAuthInfo: authInfo });
-}
-
-async function removeAuthInfo() {
-	let authInfo = getAuthInfo();
-	if (authInfo.revokableAccessToken) {
-		setAuthInfo({ revokableAccessToken: authInfo.revokableAccessToken });
-	} else {
-		await configStorage.remove(["authInfo"]);
-	}
-}
-
-async function removeDropboxAuthInfo() {
-	let authInfo = getDropboxAuthInfo();
-	if (authInfo.revokableAccessToken) {
-		setDropboxAuthInfo({ revokableAccessToken: authInfo.revokableAccessToken });
-	} else {
-		await configStorage.remove(["dropboxAuthInfo"]);
-	}
 }
 
 async function resetProfiles() {
