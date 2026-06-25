@@ -544,9 +544,12 @@ function createLogsWindowElement() {
 					bottom: 24px;
 					left: 8px;
 					z-index: 2147483647;
-					opacity: 0.9;
-					padding: 4px;
-					background-color: white;
+					padding: 10px 12px;
+					border-radius: 8px;
+					background-color: rgba(0, 0, 0, 0.7);
+					backdrop-filter: blur(10px);
+					-webkit-backdrop-filter: blur(10px);
+					box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 					min-width: ${LOG_PANEL_WIDTH}px;
 					min-height: 16px;
 					transition: height 100ms;
@@ -556,8 +559,8 @@ function createLogsWindowElement() {
 					justify-content: space-between;
 					padding: 2px;
 					font-family: arial, sans-serif;
-					color: black;
-					background-color: white;
+					color: #e5e5e5;
+					background-color: transparent;
 				}
 				.${LOGS_LINE_TEXT_ELEMENT_CLASSNAME} {
 					font-size: 13px;
@@ -613,7 +616,7 @@ function updateLogLine(lineElement, textContent, textStatus) {
 	const textElement = lineElement.childNodes[0];
 	const statusElement = lineElement.childNodes[1];
 	textElement.textContent = textContent;
-	statusElement.style.setProperty("color", textStatus == "✓" ? "#055000" : "black");
+	statusElement.style.setProperty("color", textStatus == "✓" ? "#30d158" : "#e5e5e5");
 	if (textStatus == "✓") {
 		textElement.style.setProperty("opacity", ".5");
 		statusElement.style.setProperty("opacity", ".5");
