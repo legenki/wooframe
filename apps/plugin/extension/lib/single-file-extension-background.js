@@ -780,7 +780,7 @@
       saveToRestFormApiFileFieldName: "",
       saveToRestFormApiUrlFieldName: "",
       saveToRestFormApiToken: "",
-      S3Domain: "s3.amazonaws.com",
+      S3Domain: "",
       S3Region: "",
       S3Bucket: "",
       S3AccessKey: "",
@@ -2360,8 +2360,8 @@
       throw new Error((n.statusText || "Error " + n.status) + " (Woleet)");
     return n.json();
   }
-  const _a = "https://oauth2.googleapis.com/token",
-    Ba = "https://www.googleapis.com/drive/v3/files",
+  const _a = "",
+    Ba = "",
     Oa = "uniquify";
   let ja = class {
     constructor(e) {
@@ -2432,7 +2432,7 @@
         }
       const r = Ha(
         await fetch(
-          "https://www.googleapis.com/upload/drive/v3/files" +
+          "" +
             (t ? "/" + t : "") +
             "?uploadType=resumable",
           {
@@ -2591,7 +2591,7 @@
         ? new Error("invalid_token")
         : new Error("unknown_error (" + e.status + ")");
   }
-  const Ja = "https://api.dropboxapi.com/oauth2/token",
+  const Ja = "",
     Xa = "uniquify",
     Za = "prompt",
     Qa = /[\u007f-\uffff]/g;
@@ -2609,7 +2609,7 @@
     }
     async upload() {
       const e = nn(
-          await fetch("https://api.dropboxapi.com/2/files/search_v2", {
+          await fetch("", {
             method: "POST",
             headers: {
               Authorization: "Bearer " + this.token,
@@ -2629,7 +2629,7 @@
         else if ("skip" == this.filenameConflictAction) return t;
       const a = nn(
           await fetch(
-            "https://content.dropboxapi.com/2/files/upload_session/start",
+            "",
             {
               method: "POST",
               headers: {
@@ -2682,7 +2682,7 @@
       (t = t.slice(e.offset, a)));
     const n = nn(
       await fetch(
-        "https://content.dropboxapi.com/2/files/upload_session/append_v2",
+        "",
         {
           method: "POST",
           headers: {
@@ -2707,7 +2707,7 @@
     let o = e.metadata.name;
     o.startsWith("/") || (o = "/" + o);
     const r = await fetch(
-      "https://content.dropboxapi.com/2/files/upload_session/finish",
+      "",
       {
         method: "POST",
         headers: {
@@ -3018,7 +3018,7 @@
     Dn = ".",
     Fn = /\s\((\d+)\)$/;
   class Nn {
-    constructor(e, t, a, n, o = "s3.amazonaws.com") {
+    constructor(e, t, a, n, o = "") {
       ((this.api = new qn({
         domain: o,
         region: e,
@@ -4347,7 +4347,7 @@
           throw r;
         }
       }
-    })(tr, ar, ["https://www.googleapis.com/auth/drive.file"]),
+    })(tr, ar, [""]),
     rr = new (class {
       constructor(e, t) {
         ((this.clientId = e), (this.clientKey = t));
@@ -4426,7 +4426,7 @@
       async revokeAuthToken(e) {
         if (e) {
           const t = await fetch(
-            "https://api.dropboxapi.com/2/auth/token/revoke",
+            "",
             { method: "POST", headers: { Authorization: "Bearer " + e } },
           );
           try {
